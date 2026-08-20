@@ -1,0 +1,2716 @@
+Directory structure:
+└── frontend/
+    ├── README.md
+    ├── index.html
+    ├── package.json
+    ├── vite.config.js
+    ├── .oxlintrc.json
+    └── src/
+        ├── App.css
+        ├── App.jsx
+        ├── index.css
+        ├── main.jsx
+        ├── components/
+        │   ├── icons/
+        │   │   └── TnEmblem.jsx
+        │   ├── layout/
+        │   │   ├── MainContent.jsx
+        │   │   ├── Sidebar.jsx
+        │   │   ├── SourceInspector.jsx
+        │   │   └── TopBar.jsx
+        │   ├── modules/
+        │   │   ├── AuditModule.jsx
+        │   │   ├── BulkDetailView.jsx
+        │   │   ├── BulkModule.jsx
+        │   │   ├── ContentModule.jsx
+        │   │   ├── DataModule.jsx
+        │   │   ├── DocumentModule.jsx
+        │   │   ├── GeneralModule.jsx
+        │   │   └── SettingsModule.jsx
+        │   └── shared/
+        │       └── ConfidenceBadge.jsx
+        ├── lib/
+        │   ├── api.js
+        │   ├── i18n.js
+        │   └── utils.js
+        ├── locales/
+        │   ├── en.json
+        │   └── ta.json
+        └── stores/
+            └── appStore.js
+
+================================================
+FILE: README.md
+================================================
+# React + Vite
+
+This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+
+Currently, two official plugins are available:
+
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+
+## React Compiler
+
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+
+## Expanding the Oxlint configuration
+
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+
+
+
+================================================
+FILE: index.html
+================================================
+<!doctype html>
+<html lang="ta">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%231a3a5c'/><text x='50' y='58' font-size='32' text-anchor='middle' fill='%23c8a951'>🏛️</text></svg>" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ஈரோடு மாவட்ட ஆட்சியர் அலுவலகம் — AI உதவி அமைப்பு</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Tamil:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+
+
+
+================================================
+FILE: package.json
+================================================
+{
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "oxlint",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@tanstack/react-table": "^9.1.2",
+    "clsx": "^2.1.1",
+    "i18next": "^26.3.6",
+    "lucide-react": "^1.33.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-i18next": "^17.0.11",
+    "react-router-dom": "^7.18.2",
+    "recharts": "^3.10.1",
+    "tailwind-merge": "^3.6.0",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.4",
+    "oxlint": "^1.75.0",
+    "tailwindcss": "^4.3.3",
+    "vite": "^8.2.0"
+  }
+}
+
+
+
+================================================
+FILE: vite.config.js
+================================================
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
+
+export default defineConfig({
+  plugins: [
+    react(),
+    tailwindcss(),
+  ],
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
+      '/outputs': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
+    },
+  },
+})
+
+
+
+
+================================================
+FILE: .oxlintrc.json
+================================================
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "oxc"],
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/only-export-components": ["warn", { "allowConstantExport": true }]
+  }
+}
+
+
+
+================================================
+FILE: src/App.css
+================================================
+.counter {
+  font-size: 16px;
+  padding: 5px 10px;
+  border-radius: 5px;
+  color: var(--accent);
+  background: var(--accent-bg);
+  border: 2px solid transparent;
+  transition: border-color 0.3s;
+  margin-bottom: 24px;
+
+  &:hover {
+    border-color: var(--accent-border);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+.hero {
+  position: relative;
+
+  .base,
+  .framework,
+  .vite {
+    inset-inline: 0;
+    margin: 0 auto;
+  }
+
+  .base {
+    width: 170px;
+    position: relative;
+    z-index: 0;
+  }
+
+  .framework,
+  .vite {
+    position: absolute;
+  }
+
+  .framework {
+    z-index: 1;
+    top: 34px;
+    height: 28px;
+    transform: perspective(2000px) rotateZ(300deg) rotateX(44deg) rotateY(39deg)
+      scale(1.4);
+  }
+
+  .vite {
+    z-index: 0;
+    top: 107px;
+    height: 26px;
+    width: auto;
+    transform: perspective(2000px) rotateZ(300deg) rotateX(40deg) rotateY(39deg)
+      scale(0.8);
+  }
+}
+
+#center {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  place-content: center;
+  place-items: center;
+  flex-grow: 1;
+
+  @media (max-width: 1024px) {
+    padding: 32px 20px 24px;
+    gap: 18px;
+  }
+}
+
+#next-steps {
+  display: flex;
+  border-top: 1px solid var(--border);
+  text-align: left;
+
+  & > div {
+    flex: 1 1 0;
+    padding: 32px;
+    @media (max-width: 1024px) {
+      padding: 24px 20px;
+    }
+  }
+
+  .icon {
+    margin-bottom: 16px;
+    width: 22px;
+    height: 22px;
+  }
+
+  @media (max-width: 1024px) {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+#docs {
+  border-right: 1px solid var(--border);
+
+  @media (max-width: 1024px) {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+#next-steps ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  gap: 8px;
+  margin: 32px 0 0;
+
+  .logo {
+    height: 18px;
+  }
+
+  a {
+    color: var(--text-h);
+    font-size: 16px;
+    border-radius: 6px;
+    background: var(--social-bg);
+    display: flex;
+    padding: 6px 12px;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: box-shadow 0.3s;
+
+    &:hover {
+      box-shadow: var(--shadow);
+    }
+    .button-icon {
+      height: 18px;
+      width: 18px;
+    }
+  }
+
+  @media (max-width: 1024px) {
+    margin-top: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+
+    li {
+      flex: 1 1 calc(50% - 8px);
+    }
+
+    a {
+      width: 100%;
+      justify-content: center;
+      box-sizing: border-box;
+    }
+  }
+}
+
+#spacer {
+  height: 88px;
+  border-top: 1px solid var(--border);
+  @media (max-width: 1024px) {
+    height: 48px;
+  }
+}
+
+.ticks {
+  position: relative;
+  width: 100%;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    top: -4.5px;
+    border: 5px solid transparent;
+  }
+
+  &::before {
+    left: 0;
+    border-left-color: var(--border);
+  }
+  &::after {
+    right: 0;
+    border-right-color: var(--border);
+  }
+}
+
+
+
+================================================
+FILE: src/App.jsx
+================================================
+import React, { useEffect } from 'react';
+import useAppStore from './stores/appStore';
+import { fetchConfig } from './lib/api';
+import Sidebar from './components/layout/Sidebar';
+import TopBar from './components/layout/TopBar';
+import MainContent from './components/layout/MainContent';
+import SourceInspector from './components/layout/SourceInspector';
+
+export default function App() {
+  const { sidebarCollapsed, theme, setAppConfig } = useAppStore();
+
+  useEffect(() => {
+    // Synchronize theme class on html element
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+
+    // Fetch zero-hardcoded dynamic backend configuration
+    fetchConfig()
+      .then((cfg) => setAppConfig(cfg))
+      .catch((err) => console.warn('Could not fetch app config:', err));
+  }, [theme, setAppConfig]);
+
+  return (
+    <div className="app-layout">
+      {/* 280px / 72px Collapsible Sidebar */}
+      <Sidebar />
+
+      {/* Main App Canvas */}
+      <div className={`main-area ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+        <TopBar />
+        <main className="content-area">
+          <MainContent />
+        </main>
+      </div>
+
+      {/* 400px Slide-out Source & Grounding Inspector Panel */}
+      <SourceInspector />
+    </div>
+  );
+}
+
+
+
+================================================
+FILE: src/index.css
+================================================
+@import "tailwindcss";
+
+/* ================================================================
+   TN Government Design System â€” Erode Collectorate AI
+   Supports both Dark and Light (White) themes
+   ================================================================ */
+
+@theme {
+  /* --- TN Government Color Palette --- */
+  --color-tn-primary: #1a3a5c;
+  --color-tn-primary-light: #2a5a8c;
+  --color-tn-primary-dark: #0f2540;
+  --color-tn-accent: #c8a951;
+  --color-tn-accent-light: #dfc76d;
+  --color-tn-success: #22c55e;
+  --color-tn-warning: #f59e0b;
+  --color-tn-danger: #ef4444;
+  --color-tn-info: #3b82f6;
+
+  /* --- Confidence Badge Colors --- */
+  --color-badge-green: #22c55e;
+  --color-badge-yellow: #f59e0b;
+  --color-badge-red: #ef4444;
+
+  /* --- Light theme surfaces (default) --- */
+  --color-surface-bg: #f8f9fc;
+  --color-surface-card: #ffffff;
+  --color-surface-sidebar: #1a3a5c;
+  --color-surface-hover: #f0f2f5;
+  --color-surface-border: #e2e8f0;
+  --color-surface-input: #ffffff;
+
+  /* --- Light theme text --- */
+  --color-text-primary: #1e293b;
+  --color-text-secondary: #64748b;
+  --color-text-muted: #94a3b8;
+  --color-text-inverse: #ffffff;
+
+  /* --- Spacing --- */
+  --spacing-sidebar: 280px;
+  --spacing-sidebar-collapsed: 72px;
+  --spacing-topbar: 56px;
+  --spacing-inspector: 400px;
+}
+
+/* ================================================================
+   Dark Theme
+   ================================================================ */
+.dark {
+  --color-surface-bg: #0f172a;
+  --color-surface-card: #1e293b;
+  --color-surface-sidebar: #0c1929;
+  --color-surface-hover: #334155;
+  --color-surface-border: #334155;
+  --color-surface-input: #1e293b;
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #64748b;
+  --color-text-inverse: #0f172a;
+}
+
+/* ================================================================
+   Base Styles
+   ================================================================ */
+@font-face {
+  font-family: 'Noto Sans Tamil';
+  font-display: swap;
+  src: url('https://fonts.gstatic.com/s/notosanstamil/v27/ieVc2YdFI3GCY6SyQy1KfStzYKZgzN1z4LKDbeZce-0429tBManUkKiN6Dh_EvAUmWQ.woff2') format('woff2');
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: 'Inter', 'Noto Sans Tamil', 'Nirmala UI', system-ui, -apple-system, sans-serif;
+  background-color: var(--color-surface-bg);
+  color: var(--color-text-primary);
+  min-height: 100vh;
+  line-height: 1.5;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ================================================================
+   Scrollbar Styling
+   ================================================================ */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-text-muted);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-secondary);
+}
+
+/* ================================================================
+   Layout Classes
+   ================================================================ */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: var(--spacing-sidebar);
+  background: var(--color-surface-sidebar);
+  color: var(--color-text-inverse);
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 40;
+  overflow: hidden;
+}
+
+.sidebar.collapsed {
+  width: var(--spacing-sidebar-collapsed);
+}
+
+.main-area {
+  margin-left: var(--spacing-sidebar);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.main-area.sidebar-collapsed {
+  margin-left: var(--spacing-sidebar-collapsed);
+}
+
+.topbar {
+  height: var(--spacing-topbar);
+  background: var(--color-surface-card);
+  border-bottom: 1px solid var(--color-surface-border);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  gap: 16px;
+}
+
+.content-area {
+  flex: 1;
+  padding: 24px 32px;
+  overflow-y: auto;
+  max-width: 1680px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+
+/* ================================================================
+   Card Component
+   ================================================================ */
+.card {
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-surface-border);
+  border-radius: 12px;
+  padding: 20px;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.dark .card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* ================================================================
+   Status Badge
+   ================================================================ */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.status-pending { background: #fef3c7; color: #92400e; }
+.status-ocr_done { background: #dbeafe; color: #1e40af; }
+.status-classified { background: #e0e7ff; color: #3730a3; }
+.status-draft_ready { background: #fce7f3; color: #9d174d; }
+.status-approved { background: #d1fae5; color: #065f46; }
+.status-rejected { background: #fee2e2; color: #991b1b; }
+
+.dark .status-pending { background: #78350f; color: #fef3c7; }
+.dark .status-ocr_done { background: #1e3a5f; color: #93c5fd; }
+.dark .status-classified { background: #312e81; color: #c7d2fe; }
+.dark .status-draft_ready { background: #831843; color: #fbcfe8; }
+.dark .status-approved { background: #064e3b; color: #a7f3d0; }
+.dark .status-rejected { background: #7f1d1d; color: #fecaca; }
+
+/* ================================================================
+   Priority Indicators
+   ================================================================ */
+.priority-high { color: var(--color-tn-danger); font-weight: 700; }
+.priority-medium { color: var(--color-tn-warning); font-weight: 600; }
+.priority-low { color: var(--color-tn-success); font-weight: 500; }
+
+/* ================================================================
+   Tamil Typography
+   ================================================================ */
+.tamil-text {
+  font-family: 'Noto Sans Tamil', sans-serif;
+  line-height: 1.7;
+}
+
+.module-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+/* ================================================================
+   Button System
+   ================================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-primary {
+  background: var(--color-tn-primary);
+  color: white;
+}
+.btn-primary:hover {
+  background: var(--color-tn-primary-light);
+}
+
+.btn-accent {
+  background: var(--color-tn-accent);
+  color: var(--color-tn-primary-dark);
+}
+.btn-accent:hover {
+  background: var(--color-tn-accent-light);
+}
+
+.btn-success {
+  background: var(--color-tn-success);
+  color: white;
+}
+.btn-success:hover {
+  background: #16a34a;
+}
+
+.btn-danger {
+  background: var(--color-tn-danger);
+  color: white;
+}
+.btn-danger:hover {
+  background: #dc2626;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-surface-border);
+}
+.btn-ghost:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text-primary);
+}
+
+.btn-sm {
+  padding: 4px 12px;
+  font-size: 0.75rem;
+}
+
+.btn-lg {
+  padding: 12px 28px;
+  font-size: 1rem;
+}
+
+/* ================================================================
+   Stat Cards
+   ================================================================ */
+.stat-card {
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-surface-border);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.stat-card:hover {
+  border-color: var(--color-tn-primary-light);
+  box-shadow: 0 4px 16px rgba(26, 58, 92, 0.12);
+}
+
+.dark .stat-card:hover {
+  box-shadow: 0 4px 16px rgba(26, 58, 92, 0.4);
+}
+
+.stat-card .stat-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--color-text-primary);
+  line-height: 1;
+}
+
+.stat-card .stat-label {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+/* ================================================================
+   Data Table
+   ================================================================ */
+.data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.85rem;
+}
+
+.data-table th {
+  background: var(--color-surface-hover);
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 2px solid var(--color-surface-border);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+
+.data-table th:hover {
+  color: var(--color-text-primary);
+}
+
+.data-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-surface-border);
+  color: var(--color-text-primary);
+  vertical-align: middle;
+}
+
+.data-table tr:hover td {
+  background: var(--color-surface-hover);
+}
+
+.data-table tr.selected td {
+  background: rgba(26, 58, 92, 0.08);
+}
+
+.dark .data-table tr.selected td {
+  background: rgba(42, 90, 140, 0.2);
+}
+
+/* ================================================================
+   Confidence Indicator (SVG-based)
+   ================================================================ */
+.confidence-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* ================================================================
+   Empty State
+   ================================================================ */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  gap: 16px;
+}
+
+.empty-state .empty-icon {
+  width: 80px;
+  height: 80px;
+  opacity: 0.3;
+}
+
+.empty-state .empty-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.empty-state .empty-desc {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  max-width: 360px;
+}
+
+/* ================================================================
+   Loading Spinner
+   ================================================================ */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--color-surface-border);
+  border-top-color: var(--color-tn-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* ================================================================
+   Inspector Panel
+   ================================================================ */
+.inspector-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: var(--spacing-inspector);
+  background: var(--color-surface-card);
+  border-left: 1px solid var(--color-surface-border);
+  z-index: 50;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+  padding: 24px;
+}
+
+.inspector-panel.open {
+  transform: translateX(0);
+}
+
+/* ================================================================
+   Animations
+   ================================================================ */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(24px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease forwards;
+}
+
+.animate-slide-in {
+  animation: slideInRight 0.3s ease forwards;
+}
+
+/* ================================================================
+   Grounding Map Table
+   ================================================================ */
+.grounding-table {
+  width: 100%;
+  font-size: 0.8rem;
+}
+
+.grounding-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--color-surface-border);
+  vertical-align: top;
+}
+
+.grounding-table .field-name {
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  width: 140px;
+}
+
+.grounding-table .field-value {
+  color: var(--color-text-primary);
+  word-break: break-word;
+}
+
+.grounding-table .source-chunk {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+  margin-top: 4px;
+}
+
+/* ================================================================
+   Upload Zone
+   ================================================================ */
+.upload-zone {
+  border: 2px dashed var(--color-surface-border);
+  border-radius: 12px;
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.upload-zone:hover,
+.upload-zone.drag-over {
+  border-color: var(--color-tn-primary);
+  background: rgba(26, 58, 92, 0.04);
+}
+
+.dark .upload-zone:hover,
+.dark .upload-zone.drag-over {
+  background: rgba(42, 90, 140, 0.1);
+}
+
+/* ================================================================
+   Sidebar Nav Item
+   ================================================================ */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  color: rgba(255, 255, 255, 0.65);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  margin: 2px 12px;
+  font-size: 0.9rem;
+  text-decoration: none;
+  position: relative;
+}
+
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.nav-item.active {
+  background: rgba(200, 169, 81, 0.15);
+  color: var(--color-tn-accent);
+  font-weight: 600;
+}
+
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  background: var(--color-tn-accent);
+  border-radius: 0 3px 3px 0;
+}
+
+.nav-item .nav-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ================================================================
+   Tab System
+   ================================================================ */
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--color-surface-border);
+  margin-bottom: 20px;
+}
+
+.tab {
+  padding: 10px 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.2s ease;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+}
+
+.tab:hover {
+  color: var(--color-text-primary);
+}
+
+.tab.active {
+  color: var(--color-tn-primary);
+  border-bottom-color: var(--color-tn-primary);
+  font-weight: 600;
+}
+
+.dark .tab.active {
+  color: var(--color-tn-accent);
+  border-bottom-color: var(--color-tn-accent);
+}
+
+/* ================================================================
+   Modal / Overlay
+   ================================================================ */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal {
+  background: var(--color-surface-card);
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 560px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
+}
+
+/* ================================================================
+   Responsive
+   ================================================================ */
+@media (max-width: 1400px) {
+  :root {
+    --spacing-sidebar: 240px;
+  }
+}
+
+
+
+================================================
+FILE: src/main.jsx
+================================================
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import './index.css';
+import './lib/i18n';
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
+
+
+================================================
+FILE: src/components/icons/TnEmblem.jsx
+================================================
+Error reading file with 'cp1252': 'charmap' codec can't decode byte 0x8d in position 2144: character maps to <undefined>
+
+
+================================================
+FILE: src/components/layout/MainContent.jsx
+================================================
+import React from 'react';
+import useAppStore from '../../stores/appStore';
+import GeneralModule from '../modules/GeneralModule';
+import DocumentModule from '../modules/DocumentModule';
+import DataModule from '../modules/DataModule';
+import ContentModule from '../modules/ContentModule';
+import BulkModule from '../modules/BulkModule';
+import AuditModule from '../modules/AuditModule';
+import SettingsModule from '../modules/SettingsModule';
+
+export default function MainContent() {
+  const { currentModule } = useAppStore();
+
+  switch (currentModule) {
+    case 'general':
+      return <GeneralModule />;
+    case 'document':
+      return <DocumentModule />;
+    case 'data':
+      return <DataModule />;
+    case 'content':
+      return <ContentModule />;
+    case 'bulk':
+      return <BulkModule />;
+    case 'audit':
+      return <AuditModule />;
+    case 'settings':
+      return <SettingsModule />;
+    default:
+      return <BulkModule />;
+  }
+}
+
+
+
+================================================
+FILE: src/components/layout/Sidebar.jsx
+================================================
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import useAppStore from '../../stores/appStore';
+import TnEmblem from '../icons/TnEmblem';
+import { cn } from '../../lib/utils';
+import {
+  MessageSquare,
+  FileText,
+  BarChart3,
+  Stamp,
+  Inbox,
+  Settings,
+  ClipboardList,
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
+
+const NAV_MODULES = [
+  { id: 'general', icon: MessageSquare },
+  { id: 'document', icon: FileText },
+  { id: 'data', icon: BarChart3 },
+  { id: 'content', icon: Stamp },
+  { id: 'bulk', icon: Inbox },
+];
+
+const NAV_BOTTOM = [
+  { id: 'audit', icon: ClipboardList },
+  { id: 'settings', icon: Settings },
+];
+
+export default function Sidebar() {
+  const { t } = useTranslation();
+  const {
+    currentModule,
+    setCurrentModule,
+    sidebarCollapsed,
+    toggleSidebar,
+  } = useAppStore();
+
+  return (
+    <aside className={cn('sidebar', sidebarCollapsed && 'collapsed')}>
+      {/* Header with emblem */}
+      <div
+        style={{
+          padding: sidebarCollapsed ? '20px 12px' : '20px',
+          borderBottom: '1px solid rgba(255,255,255,0.1)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          minHeight: 80,
+        }}
+      >
+        <TnEmblem size={sidebarCollapsed ? 36 : 42} className="text-[#c8a951] flex-shrink-0" />
+        {!sidebarCollapsed && (
+          <div style={{ overflow: 'hidden' }}>
+            <div
+              className="tamil-text"
+              style={{
+                fontSize: '0.85rem',
+                fontWeight: 700,
+                color: '#c8a951',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {t('app_title')}
+            </div>
+            <div
+              style={{
+                fontSize: '0.7rem',
+                color: 'rgba(255,255,255,0.5)',
+                marginTop: 2,
+              }}
+            >
+              {t('app_subtitle')}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Module Navigation */}
+      <nav style={{ flex: 1, paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {NAV_MODULES.map((mod) => {
+          const Icon = mod.icon;
+          const isActive = currentModule === mod.id;
+          return (
+            <button
+              key={mod.id}
+              className={cn('nav-item', isActive && 'active')}
+              onClick={() => setCurrentModule(mod.id)}
+              title={t(`sidebar.${mod.id}`)}
+            >
+              <Icon size={20} style={{ flexShrink: 0 }} />
+              {!sidebarCollapsed && (
+                <span className="nav-label tamil-text">{t(`sidebar.${mod.id}`)}</span>
+              )}
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* Bottom actions */}
+      <div
+        style={{
+          borderTop: '1px solid rgba(255,255,255,0.1)',
+          paddingTop: 8,
+          paddingBottom: 16,
+        }}
+      >
+        {NAV_BOTTOM.map((mod) => {
+          const Icon = mod.icon;
+          return (
+            <button
+              key={mod.id}
+              className="nav-item"
+              onClick={() => setCurrentModule(mod.id)}
+              title={t(`sidebar.${mod.id}`)}
+            >
+              <Icon size={20} style={{ flexShrink: 0 }} />
+              {!sidebarCollapsed && (
+                <span className="nav-label tamil-text">{t(`sidebar.${mod.id}`)}</span>
+              )}
+            </button>
+          );
+        })}
+
+        {/* Collapse toggle */}
+        <button
+          className="nav-item"
+          onClick={toggleSidebar}
+          title={sidebarCollapsed ? 'Expand' : 'Collapse'}
+          style={{ marginTop: 4 }}
+        >
+          {sidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+          {!sidebarCollapsed && <span className="nav-label">Collapse</span>}
+        </button>
+      </div>
+    </aside>
+  );
+}
+
+
+
+================================================
+FILE: src/components/layout/SourceInspector.jsx
+================================================
+Error reading file with 'cp1252': 'charmap' codec can't decode byte 0x8d in position 2029: character maps to <undefined>
+
+
+================================================
+FILE: src/components/layout/TopBar.jsx
+================================================
+[Binary file]
+
+
+================================================
+FILE: src/components/modules/AuditModule.jsx
+================================================
+Error reading file with 'cp1252': 'charmap' codec can't decode byte 0x8d in position 1201: character maps to <undefined>
+
+
+================================================
+FILE: src/components/modules/BulkDetailView.jsx
+================================================
+Error reading file with 'cp1252': 'charmap' codec can't decode byte 0x81 in position 2470: character maps to <undefined>
+
+
+================================================
+FILE: src/components/modules/BulkModule.jsx
+================================================
+import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import useAppStore from '../../stores/appStore';
+import { fetchBulkItems, fetchStats, ingestFile } from '../../lib/api';
+import { formatDate, getStatusLabel, getPriorityLabel, truncate } from '../../lib/utils';
+import ConfidenceBadge from '../shared/ConfidenceBadge';
+import BulkDetailView from './BulkDetailView';
+import {
+  Inbox,
+  Clock,
+  FileCheck,
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
+  Upload,
+  RefreshCw,
+  Search,
+  ChevronDown,
+  Eye,
+} from 'lucide-react';
+
+export default function BulkModule() {
+  const { t } = useTranslation();
+  const { appConfig } = useAppStore();
+  const [stats, setStats] = useState(null);
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedId, setSelectedId] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+
+  // Filters
+  const [statusFilter, setStatusFilter] = useState('');
+  const [deptFilter, setDeptFilter] = useState('');
+  const [priorityFilter, setPriorityFilter] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [statsData, itemsData] = await Promise.all([
+        fetchStats(),
+        fetchBulkItems({
+          status: statusFilter || undefined,
+          department: deptFilter || undefined,
+          priority: priorityFilter || undefined,
+        }),
+      ]);
+      setStats(statsData);
+      setItems(itemsData.items || []);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [statusFilter, deptFilter, priorityFilter]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const handleFileUpload = async (files) => {
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    try {
+      for (const file of files) {
+        await ingestFile(file);
+      }
+      await loadData();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragOver(false);
+    handleFileUpload(e.dataTransfer.files);
+  };
+
+  // Filter items by search query
+  const filteredItems = items.filter((item) => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      item.file_name?.toLowerCase().includes(q) ||
+      item.source_id?.toLowerCase().includes(q) ||
+      item.department?.toLowerCase().includes(q)
+    );
+  });
+
+  // If an item is selected, show detail view
+  if (selectedId) {
+    return <BulkDetailView sourceId={selectedId} onBack={() => setSelectedId(null)} onRefresh={loadData} />;
+  }
+
+  const statCards = stats
+    ? [
+        { key: 'total', value: stats.total, icon: Inbox, color: '#1a3a5c' },
+        { key: 'pending', value: stats.pending, icon: Clock, color: '#f59e0b' },
+        { key: 'draft_ready', value: stats.draft_ready, icon: FileCheck, color: '#8b5cf6' },
+        { key: 'approved', value: stats.approved, icon: CheckCircle2, color: '#22c55e' },
+        { key: 'rejected', value: stats.rejected, icon: XCircle, color: '#ef4444' },
+        { key: 'urgent', value: stats.urgent, icon: AlertTriangle, color: '#dc2626' },
+      ]
+    : [];
+
+  const departments = appConfig?.departments || {};
+
+  return (
+    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      {/* Title Row */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <h1 className="module-title tamil-text">{t('bulk.title')}</h1>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="btn btn-ghost btn-sm" onClick={loadData} disabled={loading}>
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+          </button>
+        </div>
+      </div>
+
+      {/* Stat Cards Grid */}
+      {stats && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16 }}>
+          {statCards.map((card) => {
+            const Icon = card.icon;
+            return (
+              <div
+                key={card.key}
+                className="stat-card"
+                onClick={() => {
+                  if (card.key !== 'total' && card.key !== 'urgent') {
+                    setStatusFilter(card.key === 'pending' ? 'pending' : card.key);
+                  } else {
+                    setStatusFilter('');
+                  }
+                }}
+                style={{ borderLeft: `4px solid ${card.color}` }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Icon size={20} style={{ color: card.color }} />
+                </div>
+                <div className="stat-value">{card.value}</div>
+                <div className="stat-label tamil-text">{t(`bulk.${card.key}`)}</div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Upload Zone */}
+      <div
+        className={`upload-zone ${dragOver ? 'drag-over' : ''}`}
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={handleDrop}
+        onClick={() => document.getElementById('file-upload-input').click()}
+      >
+        <input
+          id="file-upload-input"
+          type="file"
+          multiple
+          accept=".pdf,.png,.jpg,.jpeg,.tiff,.tif,.eml"
+          style={{ display: 'none' }}
+          onChange={(e) => handleFileUpload(e.target.files)}
+        />
+        <Upload size={32} style={{ color: 'var(--color-text-muted)', marginBottom: 8 }} />
+        <div style={{ fontWeight: 600, color: 'var(--color-text-secondary)' }} className="tamil-text">
+          {uploading ? t('common.loading') : t('bulk.upload')}
+        </div>
+        <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }} className="tamil-text">
+          {t('bulk.upload_desc')}
+        </div>
+      </div>
+
+      {/* Filters Row */}
+      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+        {/* Search */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          background: 'var(--color-surface-input)',
+          border: '1px solid var(--color-surface-border)',
+          borderRadius: 8,
+          padding: '6px 12px',
+          flex: '1 1 240px',
+          maxWidth: 360,
+        }}>
+          <Search size={16} style={{ color: 'var(--color-text-muted)' }} />
+          <input
+            placeholder={t('common.search')}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              outline: 'none',
+              flex: 1,
+              fontSize: '0.85rem',
+              color: 'var(--color-text-primary)',
+            }}
+          />
+        </div>
+
+        {/* Status Filter */}
+        <div style={{ position: 'relative' }}>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="btn btn-ghost btn-sm"
+            style={{ paddingRight: 28, appearance: 'none', cursor: 'pointer' }}
+          >
+            <option value="">{t('bulk.filter_all')}</option>
+            <option value="pending">{getStatusLabel('pending')}</option>
+            <option value="ocr_done">{getStatusLabel('ocr_done')}</option>
+            <option value="draft_ready">{getStatusLabel('draft_ready')}</option>
+            <option value="approved">{getStatusLabel('approved')}</option>
+            <option value="rejected">{getStatusLabel('rejected')}</option>
+          </select>
+          <ChevronDown size={14} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--color-text-muted)' }} />
+        </div>
+
+        {/* Department Filter */}
+        <div style={{ position: 'relative' }}>
+          <select
+            value={deptFilter}
+            onChange={(e) => setDeptFilter(e.target.value)}
+            className="btn btn-ghost btn-sm tamil-text"
+            style={{ paddingRight: 28, appearance: 'none', cursor: 'pointer' }}
+          >
+            <option value="">{t('bulk.filter_by_dept')}</option>
+            {Object.entries(departments).map(([tamilName, engName]) => (
+              <option key={tamilName} value={tamilName}>{tamilName}</option>
+            ))}
+          </select>
+          <ChevronDown size={14} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--color-text-muted)' }} />
+        </div>
+
+        {/* Priority Filter */}
+        <div style={{ position: 'relative' }}>
+          <select
+            value={priorityFilter}
+            onChange={(e) => setPriorityFilter(e.target.value)}
+            className="btn btn-ghost btn-sm"
+            style={{ paddingRight: 28, appearance: 'none', cursor: 'pointer' }}
+          >
+            <option value="">{t('bulk.filter_by_priority')}</option>
+            <option value="HIGH">{getPriorityLabel('HIGH')}</option>
+            <option value="MEDIUM">{getPriorityLabel('MEDIUM')}</option>
+            <option value="LOW">{getPriorityLabel('LOW')}</option>
+          </select>
+          <ChevronDown size={14} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--color-text-muted)' }} />
+        </div>
+      </div>
+
+      {/* Error Banner */}
+      {error && (
+        <div style={{
+          padding: '12px 16px',
+          background: '#fee2e2',
+          color: '#991b1b',
+          borderRadius: 8,
+          fontSize: '0.85rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+        }}>
+          <AlertTriangle size={16} />
+          {error}
+          <button className="btn btn-sm btn-danger" onClick={loadData} style={{ marginLeft: 'auto' }}>
+            {t('common.retry')}
+          </button>
+        </div>
+      )}
+
+      {/* Data Table */}
+      {loading ? (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}>
+          <div className="spinner" />
+        </div>
+      ) : filteredItems.length === 0 ? (
+        <div className="empty-state">
+          <Inbox size={64} style={{ color: 'var(--color-text-muted)' }} className="empty-icon" />
+          <div className="empty-title tamil-text">{t('bulk.no_items')}</div>
+          <div className="empty-desc tamil-text">{t('bulk.no_items_desc')}</div>
+        </div>
+      ) : (
+        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th className="tamil-text">{t('bulk.file_name')}</th>
+                <th className="tamil-text">{t('bulk.type')}</th>
+                <th className="tamil-text">{t('bulk.department')}</th>
+                <th className="tamil-text">{t('bulk.priority')}</th>
+                <th className="tamil-text">{t('bulk.status')}</th>
+                <th className="tamil-text">{t('bulk.received')}</th>
+                <th className="tamil-text">{t('bulk.actions')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredItems.map((item, idx) => (
+                <tr
+                  key={item.source_id}
+                  style={{ animationDelay: `${idx * 30}ms` }}
+                  className="animate-fade-in"
+                >
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontWeight: 600 }}>{truncate(item.file_name, 30)}</span>
+                      {item.hallucination_score != null && (
+                        <ConfidenceBadge score={1 - item.hallucination_score} showLabel={false} size={12} />
+                      )}
+                    </div>
+                  </td>
+                  <td>
+                    <span style={{
+                      padding: '2px 8px',
+                      borderRadius: 4,
+                      fontSize: '0.7rem',
+                      fontWeight: 600,
+                      background: item.source_type === 'email' ? '#dbeafe' : '#fef3c7',
+                      color: item.source_type === 'email' ? '#1e40af' : '#92400e',
+                    }}>
+                      {item.source_type === 'email' ? 'ðŸ“§ Email' : 'ðŸ“„ Scan'}
+                    </span>
+                  </td>
+                  <td className="tamil-text" style={{ fontSize: '0.8rem' }}>
+                    {item.department}
+                  </td>
+                  <td>
+                    <span className={`priority-${item.priority?.toLowerCase()}`}>
+                      {getPriorityLabel(item.priority)}
+                    </span>
+                  </td>
+                  <td>
+                    <span className={`status-badge status-${item.status}`}>
+                      {getStatusLabel(item.status)}
+                    </span>
+                  </td>
+                  <td style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
+                    {formatDate(item.received_at)}
+                  </td>
+                  <td>
+                    <button
+                      className="btn btn-ghost btn-sm"
+                      onClick={() => setSelectedId(item.source_id)}
+                      title={t('bulk.view_detail')}
+                    >
+                      <Eye size={14} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+
+================================================
+FILE: src/components/modules/ContentModule.jsx
+================================================
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import useAppStore from '../../stores/appStore';
+import { generateContent } from '../../lib/api';
+import { Stamp, Sparkles, Send, FileCheck } from 'lucide-react';
+
+const TEMPLATES = [
+  { id: 'press_release', title: 'செய்தி குறிப்பு (Press Release)', desc: 'மாவட்ட ஆட்சியர் அலுவலக அதிகாரப்பூர்வ செய்தி வெளியீடு' },
+  { id: 'circular', title: 'அலுவலக சுற்றறிக்கை (Official Circular)', desc: 'துறை சார்ந்த அனைத்து அலுவலர்களுக்கான சுற்றறிக்கை' },
+  { id: 'memo', title: 'அலுவலக குறிப்பாணை (Office Memorandum)', desc: 'உள் விவகாரங்கள் மற்றும் ஒழுங்குமுறை உத்தரவுகள்' },
+  { id: 'meeting_minutes', title: 'கூட்ட நடவடிக்கை பதிவேடு (Minutes)', desc: 'திங்கள் மக்கள் குறைதீர்க்கும் நாள் கூட்ட விவரம்' }
+];
+
+export default function ContentModule() {
+  const { t } = useTranslation();
+  const { officerId } = useAppStore();
+  const [selectedTemplate, setSelectedTemplate] = useState(TEMPLATES[0].id);
+  const [subject, setSubject] = useState('');
+  const [details, setDetails] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+
+  const handleGenerate = async (e) => {
+    e.preventDefault();
+    if (!subject.trim()) return;
+    setLoading(true);
+    try {
+      const res = await generateContent(selectedTemplate, { subject, details }, officerId);
+      setResult(res);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <div>
+        <h1 className="module-title tamil-text">{t('sidebar.content')}</h1>
+        <p style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }} className="tamil-text">
+          அரசு விதிமுறைகளுக்குட்பட்ட அதிகாரப்பூர்வ செய்தி வெளியீடுகள், சுற்றறிக்கைகள் மற்றும் குறிப்பாணைகள் தயாரித்தல்
+        </p>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
+        {TEMPLATES.map((tmpl) => (
+          <div
+            key={tmpl.id}
+            className={`card ${selectedTemplate === tmpl.id ? 'active' : ''}`}
+            onClick={() => setSelectedTemplate(tmpl.id)}
+            style={{
+              cursor: 'pointer',
+              borderColor: selectedTemplate === tmpl.id ? 'var(--color-tn-accent)' : 'var(--color-surface-border)',
+              background: selectedTemplate === tmpl.id ? 'rgba(200, 169, 81, 0.08)' : 'var(--color-surface-card)',
+            }}
+          >
+            <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--color-text-primary)' }} className="tamil-text">
+              {tmpl.title}
+            </div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginTop: 4 }} className="tamil-text">
+              {tmpl.desc}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <form onSubmit={handleGenerate} className="card" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div>
+          <label className="tamil-text" style={{ fontSize: '0.85rem', fontWeight: 600, display: 'block', marginBottom: 6 }}>
+            பொருள் (Subject):
+          </label>
+          <input
+            type="text"
+            placeholder="எ.கா: ஈரோடு மாவட்டத்தில் ஜல் ஜீவன் இயக்க திட்ட ஆய்வுக் கூட்டம் - செய்தி குறிப்பு"
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+            className="tamil-text"
+            style={{
+              width: '100%',
+              padding: '10px 14px',
+              borderRadius: 8,
+              border: '1px solid var(--color-surface-border)',
+              background: 'var(--color-surface-input)',
+              color: 'var(--color-text-primary)',
+              outline: 'none',
+            }}
+          />
+        </div>
+
+        <div>
+          <label className="tamil-text" style={{ fontSize: '0.85rem', fontWeight: 600, display: 'block', marginBottom: 6 }}>
+            முக்கிய குறிப்புகள் (Key Points / Context):
+          </label>
+          <textarea
+            rows={4}
+            placeholder="கூட்டத்தின் முக்கிய முடிவுகள், கலந்து கொண்ட அலுவலர்கள், பயனாளிகள் எண்ணிக்கை..."
+            value={details}
+            onChange={(e) => setDetails(e.target.value)}
+            className="tamil-text"
+            style={{
+              width: '100%',
+              padding: '10px 14px',
+              borderRadius: 8,
+              border: '1px solid var(--color-surface-border)',
+              background: 'var(--color-surface-input)',
+              color: 'var(--color-text-primary)',
+              outline: 'none',
+              resize: 'vertical',
+            }}
+          />
+        </div>
+
+        <button type="submit" className="btn btn-primary" disabled={!subject.trim() || loading} style={{ alignSelf: 'flex-start' }}>
+          <Sparkles size={16} />
+          <span className="tamil-text">{loading ? "உருவாக்குகிறது..." : "உள்ளடக்கம் உருவாக்கு"}</span>
+        </button>
+
+        {result && (
+          <div style={{ padding: 16, background: 'var(--color-surface-hover)', borderRadius: 8, marginTop: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--color-tn-success)' }}>
+              <FileCheck size={18} />
+              <span className="tamil-text" style={{ fontWeight: 700 }}>வெற்றிகரமாக பதிவு செய்யப்பட்டது</span>
+            </div>
+            <p className="tamil-text" style={{ fontSize: '0.9rem', marginTop: 8 }}>
+              {result.message}
+            </p>
+          </div>
+        )}
+      </form>
+    </div>
+  );
+}
+
+
+
+================================================
+FILE: src/components/modules/DataModule.jsx
+================================================
+[Binary file]
+
+
+================================================
+FILE: src/components/modules/DocumentModule.jsx
+================================================
+Error reading file with 'cp1252': 'charmap' codec can't decode byte 0x8d in position 1245: character maps to <undefined>
+
+
+================================================
+FILE: src/components/modules/GeneralModule.jsx
+================================================
+import React, { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import useAppStore from '../../stores/appStore';
+import { sendChat } from '../../lib/api';
+import TnEmblem from '../icons/TnEmblem';
+import { Send, Bot, User, Sparkles, CornerDownLeft, Paperclip } from 'lucide-react';
+
+const QUICK_PROMPTS = [
+  "இன்றைய முக்கிய கோப்புகள் மற்றும் நிலுவை விவரங்கள் என்ன?",
+  "வருவாய்த்துறை நில அளவீடு தொடர்பான அரசு வழிகாட்டுதல்கள் என்ன?",
+  "சமூக நலத்துறை முதியோர் உதவித்தொகை மனுக்கள் நிலை என்ன?",
+  "பொதுமக்களின் பட்டா மாறுதல் மனுவின் சரிபார்ப்பு நடைமுறை என்ன?"
+];
+
+export default function GeneralModule() {
+  const { t } = useTranslation();
+  const { officerId } = useAppStore();
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, loading]);
+
+  const handleSend = async (textToSend) => {
+    const messageText = textToSend || input;
+    if (!messageText.trim() || loading) return;
+
+    const userMsg = {
+      id: `usr_${Date.now()}`,
+      sender: 'user',
+      text: messageText.trim(),
+      timestamp: new Date().toLocaleTimeString('ta-IN', { hour: '2-digit', minute: '2-digit' }),
+    };
+
+    setMessages((prev) => [...prev, userMsg]);
+    if (!textToSend) setInput('');
+    setLoading(true);
+
+    try {
+      const res = await sendChat(messageText.trim(), officerId);
+      const aiContent = res.blocks?.[0]?.content || "செயலாக்கப்பட்டது.";
+      const aiMsg = {
+        id: res.message_id || `ai_${Date.now()}`,
+        sender: 'ai',
+        text: aiContent,
+        timestamp: new Date().toLocaleTimeString('ta-IN', { hour: '2-digit', minute: '2-digit' }),
+      };
+      setMessages((prev) => [...prev, aiMsg]);
+    } catch (err) {
+      const errorMsg = {
+        id: `err_${Date.now()}`,
+        sender: 'ai',
+        text: `பிழை: ${err.message || 'சேவையகத்தை தொடர்பு கொள்ள முடியவில்லை.'}`,
+        timestamp: new Date().toLocaleTimeString('ta-IN', { hour: '2-digit', minute: '2-digit' }),
+        isError: true,
+      };
+      setMessages((prev) => [...prev, errorMsg]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)', gap: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div>
+          <h1 className="module-title tamil-text">{t('sidebar.general')}</h1>
+          <p style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }} className="tamil-text">
+            ஈரோடு மாவட்ட நிர்வாக தேவைகளுக்கான செயற்கை நுண்ணறிவு உதவியாளர்
+          </p>
+        </div>
+      </div>
+
+      {/* Messages Scroll Area */}
+      <div
+        className="card"
+        style={{
+          flex: 1,
+          overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 16,
+          padding: 24,
+          position: 'relative',
+        }}
+      >
+        {messages.length === 0 ? (
+          <div style={{ margin: 'auto', textAlign: 'center', maxWidth: 500, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+            <TnEmblem size={80} opacity={0.25} className="text-[#1a3a5c] dark:text-[#c8a951]" />
+            <h3 className="tamil-text" style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--color-text-primary)' }}>
+              வணக்கம், அலுவலர் {officerId}!
+            </h3>
+            <p className="tamil-text" style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
+              மாவட்ட நிர்வாக வினவல்கள், விதிமுறைகள், மனுக்கள் குறித்த வழிகாட்டுதல்களை கேட்கலாம்.
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '100%', marginTop: 8 }}>
+              {QUICK_PROMPTS.map((prompt, i) => (
+                <button
+                  key={i}
+                  className="btn btn-ghost tamil-text"
+                  style={{ textAlign: 'left', justifyContent: 'flex-start', fontSize: '0.8rem', padding: '10px 14px' }}
+                  onClick={() => handleSend(prompt)}
+                >
+                  <Sparkles size={14} style={{ color: 'var(--color-tn-accent)', flexShrink: 0 }} />
+                  <span>{prompt}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : (
+          messages.map((m) => (
+            <div
+              key={m.id}
+              style={{
+                display: 'flex',
+                gap: 12,
+                alignSelf: m.sender === 'user' ? 'flex-end' : 'flex-start',
+                maxWidth: '85%',
+              }}
+            >
+              {m.sender === 'ai' && (
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 8,
+                    background: 'var(--color-tn-primary)',
+                    color: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  <Bot size={18} />
+                </div>
+              )}
+              <div>
+                <div
+                  className="tamil-text"
+                  style={{
+                    padding: '12px 18px',
+                    borderRadius: 12,
+                    background:
+                      m.sender === 'user'
+                        ? 'var(--color-tn-primary)'
+                        : m.isError
+                        ? '#fee2e2'
+                        : 'var(--color-surface-hover)',
+                    color:
+                      m.sender === 'user'
+                        ? 'white'
+                        : m.isError
+                        ? '#991b1b'
+                        : 'var(--color-text-primary)',
+                    fontSize: '0.9rem',
+                    lineHeight: 1.7,
+                    whiteSpace: 'pre-wrap',
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
+                  }}
+                >
+                  {m.text}
+                </div>
+                <div
+                  style={{
+                    fontSize: '0.7rem',
+                    color: 'var(--color-text-muted)',
+                    marginTop: 4,
+                    textAlign: m.sender === 'user' ? 'right' : 'left',
+                  }}
+                >
+                  {m.timestamp}
+                </div>
+              </div>
+              {m.sender === 'user' && (
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 8,
+                    background: 'var(--color-surface-hover)',
+                    color: 'var(--color-text-primary)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  <User size={18} />
+                </div>
+              )}
+            </div>
+          ))
+        )}
+
+        {loading && (
+          <div style={{ display: 'flex', gap: 12, alignSelf: 'flex-start' }}>
+            <div
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 8,
+                background: 'var(--color-tn-primary)',
+                color: 'white',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Bot size={18} />
+            </div>
+            <div
+              style={{
+                padding: '12px 18px',
+                borderRadius: 12,
+                background: 'var(--color-surface-hover)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+              }}
+            >
+              <div className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} />
+              <span className="tamil-text" style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
+                செயலாக்குகிறது...
+              </span>
+            </div>
+          </div>
+        )}
+        <div ref={scrollRef} />
+      </div>
+
+      {/* Input Area */}
+      <div
+        style={{
+          display: 'flex',
+          gap: 12,
+          background: 'var(--color-surface-card)',
+          border: '1px solid var(--color-surface-border)',
+          borderRadius: 12,
+          padding: '8px 14px',
+          alignItems: 'flex-end',
+        }}
+      >
+        <textarea
+          rows={1}
+          placeholder="இங்கே உங்கள் கேள்வியை தட்டச்சு செய்யவும்... (Enter அழுத்தவும்)"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          className="tamil-text"
+          style={{
+            flex: 1,
+            background: 'transparent',
+            border: 'none',
+            outline: 'none',
+            fontSize: '0.9rem',
+            color: 'var(--color-text-primary)',
+            resize: 'none',
+            padding: '6px 0',
+            fontFamily: "'Noto Sans Tamil', sans-serif",
+            maxHeight: 120,
+          }}
+        />
+        <button
+          className="btn btn-primary"
+          onClick={() => handleSend()}
+          disabled={!input.trim() || loading}
+          style={{ padding: '8px 16px', borderRadius: 8 }}
+        >
+          <Send size={16} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+
+
+================================================
+FILE: src/components/modules/SettingsModule.jsx
+================================================
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import useAppStore from '../../stores/appStore';
+import { Settings, Server, Cpu, Database, Shield, Globe } from 'lucide-react';
+
+export default function SettingsModule() {
+  const { t } = useTranslation();
+  const { appConfig, officerId, setOfficerId, theme, toggleTheme } = useAppStore();
+
+  return (
+    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <div>
+        <h1 className="module-title tamil-text">{t('sidebar.settings')}</h1>
+        <p style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }} className="tamil-text">
+          கணினி கட்டமைப்பு, உள்ளூர் AI மாதிரி மற்றும் சேவையக விவரங்கள்
+        </p>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 20 }}>
+        {/* Officer Profile */}
+        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Shield size={18} style={{ color: 'var(--color-tn-primary-light)' }} />
+            <h3 className="tamil-text" style={{ fontSize: '1rem', fontWeight: 700 }}>
+              அலுவலர் அமர்வு (Officer Session)
+            </h3>
+          </div>
+          <div>
+            <label className="tamil-text" style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', display: 'block', marginBottom: 6 }}>
+              நடப்பு அலுவலர் எண் (Officer ID):
+            </label>
+            <input
+              type="text"
+              value={officerId}
+              onChange={(e) => setOfficerId(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                borderRadius: 8,
+                border: '1px solid var(--color-surface-border)',
+                background: 'var(--color-surface-input)',
+                color: 'var(--color-text-primary)',
+                fontWeight: 600,
+              }}
+            />
+          </div>
+        </div>
+
+        {/* System Backend Config */}
+        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Server size={18} style={{ color: 'var(--color-tn-accent)' }} />
+            <h3 className="tamil-text" style={{ fontSize: '1rem', fontWeight: 700 }}>
+              பின்னணி சேவையக விவரங்கள் (Backend Config)
+            </h3>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: '0.85rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--color-surface-border)', paddingBottom: 6 }}>
+              <span style={{ color: 'var(--color-text-secondary)' }}>AI மாதிரி (LLM):</span>
+              <strong>{appConfig?.ollama_model || 'qwen2.5:7b (Local Ollama)'}</strong>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--color-surface-border)', paddingBottom: 6 }}>
+              <span style={{ color: 'var(--color-text-secondary)' }}>OCR இயந்திரம்:</span>
+              <strong>{appConfig?.ocr_engine || 'Indic-OCR (Transformer)'}</strong>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--color-surface-border)', paddingBottom: 6 }}>
+              <span style={{ color: 'var(--color-text-secondary)' }}>தரவுத்தளம் (SQLite):</span>
+              <strong>{appConfig?.database || 'collectorate_workflow.db'}</strong>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ color: 'var(--color-text-secondary)' }}>NIC IMAP Server:</span>
+              <strong>{appConfig?.imap_server || 'imap.nic.in'}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+
+================================================
+FILE: src/components/shared/ConfidenceBadge.jsx
+================================================
+import React from 'react';
+
+/**
+ * SVG-based Confidence Badge.
+ * 🟢 high (≥0.85) | 🟡 medium (≥0.60) | 🔴 low (<0.60)
+ */
+export default function ConfidenceBadge({ score, showLabel = true, size = 14 }) {
+  const level = score >= 0.85 ? 'high' : score >= 0.60 ? 'medium' : 'low';
+  const colors = {
+    high: '#22c55e',
+    medium: '#f59e0b',
+    low: '#ef4444',
+  };
+  const labels = {
+    high: 'உயர் நம்பிக்கை',
+    medium: 'நடுத்தர நம்பிக்கை',
+    low: 'குறைந்த நம்பிக்கை',
+  };
+  const color = colors[level];
+  const pct = Math.round(score * 100);
+
+  return (
+    <span className="confidence-badge" title={`${labels[level]} — ${pct}%`}>
+      <svg width={size} height={size} viewBox="0 0 16 16">
+        <circle cx="8" cy="8" r="7" fill={color} opacity="0.2" />
+        <circle cx="8" cy="8" r="5" fill={color} />
+        {level === 'high' && (
+          <path d="M5.5 8 L7 9.5 L10.5 6" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+        )}
+        {level === 'medium' && (
+          <text x="8" y="10.5" textAnchor="middle" fill="white" fontSize="8" fontWeight="700">!</text>
+        )}
+        {level === 'low' && (
+          <text x="8" y="10.5" textAnchor="middle" fill="white" fontSize="8" fontWeight="700">✕</text>
+        )}
+      </svg>
+      {showLabel && (
+        <span style={{ color, fontSize: '0.75rem', fontWeight: 600 }}>{pct}%</span>
+      )}
+    </span>
+  );
+}
+
+
+
+================================================
+FILE: src/lib/api.js
+================================================
+const API_BASE = '/api';
+
+/**
+ * Centralized API call wrapper with error handling.
+ * All frontend data fetching goes through this function.
+ */
+export async function apiCall(endpoint, options = {}) {
+  const url = `${API_BASE}${endpoint}`;
+  const config = {
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+    ...options,
+  };
+
+  // Don't set Content-Type for FormData (file uploads)
+  if (options.body instanceof FormData) {
+    delete config.headers['Content-Type'];
+  }
+
+  try {
+    const response = await fetch(url, config);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || `API Error: ${response.status}`);
+    }
+    // Handle file downloads
+    if (response.headers.get('content-type')?.includes('application/vnd.openxmlformats')) {
+      return response.blob();
+    }
+    return response.json();
+  } catch (error) {
+    console.error(`API call failed: ${endpoint}`, error);
+    throw error;
+  }
+}
+
+// â”€â”€â”€ Config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export const fetchConfig = () => apiCall('/config');
+
+// â”€â”€â”€ Dashboard Stats â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export const fetchStats = () => apiCall('/stats');
+
+// â”€â”€â”€ Bulk Workflow â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export const fetchBulkItems = (params = {}) => {
+  const query = new URLSearchParams();
+  if (params.status) query.set('status', params.status);
+  if (params.department) query.set('department', params.department);
+  if (params.priority) query.set('priority', params.priority);
+  if (params.limit) query.set('limit', String(params.limit));
+  if (params.offset) query.set('offset', String(params.offset));
+  const qs = query.toString();
+  return apiCall(`/bulk/items${qs ? `?${qs}` : ''}`);
+};
+
+export const fetchBulkItemDetail = (sourceId) => apiCall(`/bulk/${sourceId}`);
+
+export const approveItem = (sourceId, officerId, action = 'approve') =>
+  apiCall(`/bulk/${sourceId}/approve`, {
+    method: 'POST',
+    body: JSON.stringify({ officer_id: officerId, action }),
+  });
+
+export const editDraft = (sourceId, officerId, draftText) =>
+  apiCall(`/bulk/${sourceId}/edit-draft`, {
+    method: 'POST',
+    body: JSON.stringify({ officer_id: officerId, draft_text: draftText }),
+  });
+
+export const generateFileNumber = (sourceId, department, officerId) =>
+  apiCall(`/bulk/${sourceId}/generate-file-number`, {
+    method: 'POST',
+    body: JSON.stringify({ department, officer_id: officerId }),
+  });
+
+export const exportDocx = (sourceId) => apiCall(`/bulk/${sourceId}/export-docx`);
+
+export const ingestFile = (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  return apiCall('/bulk/ingest', { method: 'POST', body: formData });
+};
+
+// â”€â”€â”€ Audit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export const fetchAuditLog = (limit = 100) => apiCall(`/audit?limit=${limit}`);
+
+// â”€â”€â”€ Chat (stub) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export const sendChat = (message, officerId) =>
+  apiCall('/chat', {
+    method: 'POST',
+    body: JSON.stringify({ message, officer_id: officerId }),
+  });
+
+// â”€â”€â”€ Document (stub) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export const uploadDocument = (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  return apiCall('/document/upload', { method: 'POST', body: formData });
+};
+
+export const fetchDocumentSummary = (docId) => apiCall(`/document/${docId}/summary`);
+
+// â”€â”€â”€ Module 2: Data & Visualization â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export const fetchDatasets = (officerId = null) => {
+  const query = officerId ? `?officer_id=${encodeURIComponent(officerId)}` : '';
+  return apiCall(`/v2/data/datasets${query}`);
+};
+
+export const fetchDatasetSchema = (datasetId) =>
+  apiCall(`/v2/data/datasets/${datasetId}/schema`);
+
+export const uploadDataset = (file, officerId = 'OFFICER') => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('officer_id', officerId);
+  return apiCall('/v2/data/upload', { method: 'POST', body: formData });
+};
+
+export const queryDataset = (datasetId, question, officerId = 'OFFICER', outputFormat = 'both', chartType = null) =>
+  apiCall('/v2/data/query', {
+    method: 'POST',
+    body: JSON.stringify({
+      dataset_id: datasetId,
+      question,
+      officer_id: officerId,
+      output_format: outputFormat,
+      chart_type: chartType,
+    }),
+  });
+
+export const detectOutliers = (datasetId, column, method = 'iqr', groupBy = null) =>
+  apiCall('/v2/data/outliers', {
+    method: 'POST',
+    body: JSON.stringify({
+      dataset_id: datasetId,
+      column,
+      method,
+      group_by: groupBy,
+    }),
+  });
+
+export const createCustomChart = (datasetId, chartType, xCol, yCol, titleTamil, officerId = 'OFFICER') =>
+  apiCall('/v2/data/chart', {
+    method: 'POST',
+    body: JSON.stringify({
+      dataset_id: datasetId,
+      chart_type: chartType,
+      x_column: xCol,
+      y_column: yCol,
+      title_tamil: titleTamil,
+      officer_id: officerId,
+    }),
+  });
+
+export const deleteDatasetApi = (datasetId, officerId = 'OFFICER') =>
+  apiCall(`/v2/data/datasets/${datasetId}?officer_id=${encodeURIComponent(officerId)}`, {
+    method: 'DELETE',
+  });
+
+// â”€â”€â”€ Content (stub) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export const generateContent = (templateType, fields, officerId) =>
+  apiCall('/content/generate', {
+    method: 'POST',
+    body: JSON.stringify({ template_type: templateType, fields, officer_id: officerId }),
+  });
+
+
+
+
+================================================
+FILE: src/lib/i18n.js
+================================================
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import ta from '../locales/ta.json';
+import en from '../locales/en.json';
+
+i18n.use(initReactI18next).init({
+  resources: {
+    ta: { translation: ta },
+    en: { translation: en },
+  },
+  lng: 'ta', // Tamil primary
+  fallbackLng: 'en',
+  interpolation: {
+    escapeValue: false,
+  },
+});
+
+export default i18n;
+
+
+
+================================================
+FILE: src/lib/utils.js
+================================================
+[Binary file]
+
+
+================================================
+FILE: src/locales/en.json
+================================================
+{
+  "app_title": "Erode District Collectorate Office",
+  "app_subtitle": "AI Assistant System",
+  "sidebar": {
+    "general": "General Assistant",
+    "document": "Document Summary",
+    "data": "Data & Visualization",
+    "content": "Official Content",
+    "bulk": "Bulk Workflow",
+    "settings": "Settings",
+    "audit": "Audit Log",
+    "logout": "Logout"
+  },
+  "topbar": {
+    "officer_id": "Officer ID",
+    "notifications": "Notifications",
+    "theme_toggle": "Toggle Theme"
+  },
+  "bulk": {
+    "title": "Bulk Workflow Dashboard",
+    "total": "Total",
+    "pending": "Pending",
+    "draft_ready": "Draft Ready",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "urgent": "Urgent",
+    "upload": "Upload File",
+    "upload_desc": "Drag & drop PDF, JPG, PNG, TIFF, or EML files here",
+    "source_id": "Source ID",
+    "file_name": "File Name",
+    "type": "Type",
+    "department": "Department",
+    "priority": "Priority",
+    "status": "Status",
+    "received": "Received Date",
+    "actions": "Actions",
+    "view_detail": "View Detail",
+    "approve": "Approve",
+    "reject": "Reject",
+    "export_docx": "Export DOCX",
+    "generate_file_no": "Generate File No.",
+    "no_items": "No workflow items found",
+    "no_items_desc": "Upload new documents to start processing",
+    "filter_all": "All",
+    "filter_by_status": "Filter by Status",
+    "filter_by_dept": "Filter by Department",
+    "filter_by_priority": "Filter by Priority"
+  },
+  "detail": {
+    "title": "Item Details",
+    "tab_ocr": "OCR Text",
+    "tab_entities": "Extracted Entities",
+    "tab_classification": "Classification",
+    "tab_draft": "Draft",
+    "tab_grounding": "Grounding Inspector",
+    "ocr_page": "Page",
+    "ocr_confidence": "Confidence",
+    "entity_type": "Type",
+    "entity_value": "Value",
+    "dept_label": "Department",
+    "priority_label": "Priority",
+    "decision_label": "Decision",
+    "draft_text": "Draft Text",
+    "hallucination_score": "Hallucination Score",
+    "grounding_field": "Field",
+    "grounding_value": "Value",
+    "grounding_source": "Source",
+    "grounding_confidence": "Confidence",
+    "back_to_list": "Back to List"
+  },
+  "inspector": {
+    "title": "Source Inspector",
+    "close": "Close",
+    "field": "Field",
+    "value": "Value",
+    "source": "Source",
+    "confidence": "Confidence Level"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Retry",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close",
+    "search": "Search",
+    "coming_soon": "Coming Soon",
+    "coming_soon_desc": "This module will be connected soon"
+  }
+}
+
+
+
+================================================
+FILE: src/locales/ta.json
+================================================
+{
+  "app_title": "ஈரோடு மாவட்ட ஆட்சியர் அலுவலகம்",
+  "app_subtitle": "AI உதவி அமைப்பு",
+  "sidebar": {
+    "general": "பொது உதவியாளர்",
+    "document": "ஆவண சுருக்கம்",
+    "data": "தரவு & காட்சிப்படுத்தல்",
+    "content": "அலுவல் உள்ளடக்கம்",
+    "bulk": "மொத்த பணிப்பாய்வு",
+    "settings": "அமைப்புகள்",
+    "audit": "தணிக்கை பதிவு",
+    "logout": "வெளியேறு"
+  },
+  "topbar": {
+    "officer_id": "அலுவலர் எண்",
+    "notifications": "அறிவிப்புகள்",
+    "theme_toggle": "தீம் மாற்றம்"
+  },
+  "bulk": {
+    "title": "மொத்த பணிப்பாய்வு டாஷ்போர்டு",
+    "total": "மொத்தம்",
+    "pending": "நிலுவை",
+    "draft_ready": "வரைவு தயார்",
+    "approved": "அங்கீகரிக்கப்பட்டவை",
+    "rejected": "நிராகரிக்கப்பட்டவை",
+    "urgent": "அவசரம்",
+    "upload": "கோப்பு பதிவேற்றம்",
+    "upload_desc": "PDF, JPG, PNG, TIFF, அல்லது EML கோப்புகளை இங்கே இழுக்கவும்",
+    "source_id": "ஆதார எண்",
+    "file_name": "கோப்பு பெயர்",
+    "type": "வகை",
+    "department": "துறை",
+    "priority": "முன்னுரிமை",
+    "status": "நிலை",
+    "received": "பெறப்பட்ட தேதி",
+    "actions": "செயல்கள்",
+    "view_detail": "விவரம் பார்",
+    "approve": "அங்கீகரி",
+    "reject": "நிராகரி",
+    "export_docx": "DOCX ஏற்றுமதி",
+    "generate_file_no": "கோப்பு எண் உருவாக்கு",
+    "no_items": "எந்த பணி உருப்படியும் கிடைக்கவில்லை",
+    "no_items_desc": "புதிய ஆவணங்களை பதிவேற்றி செயலாக்கத்தை தொடங்கவும்",
+    "filter_all": "அனைத்தும்",
+    "filter_by_status": "நிலை படி வடிகட்டு",
+    "filter_by_dept": "துறை படி வடிகட்டு",
+    "filter_by_priority": "முன்னுரிமை படி வடிகட்டு"
+  },
+  "detail": {
+    "title": "பணி விவரங்கள்",
+    "tab_ocr": "OCR உரை",
+    "tab_entities": "பிரித்தெடுக்கப்பட்ட நிறுவனங்கள்",
+    "tab_classification": "வகைப்பாடு",
+    "tab_draft": "வரைவு",
+    "tab_grounding": "ஆதார சோதனை",
+    "ocr_page": "பக்கம்",
+    "ocr_confidence": "நம்பிக்கை",
+    "entity_type": "வகை",
+    "entity_value": "மதிப்பு",
+    "dept_label": "துறை",
+    "priority_label": "முன்னுரிமை",
+    "decision_label": "முடிவு",
+    "draft_text": "வரைவு உரை",
+    "hallucination_score": "மாயத்தோற்ற மதிப்பெண்",
+    "grounding_field": "புலம்",
+    "grounding_value": "மதிப்பு",
+    "grounding_source": "ஆதாரம்",
+    "grounding_confidence": "நம்பிக்கை",
+    "back_to_list": "பட்டியலுக்கு திரும்பு"
+  },
+  "inspector": {
+    "title": "ஆதார சோதனை",
+    "close": "மூடு",
+    "field": "புலம்",
+    "value": "மதிப்பு",
+    "source": "ஆதாரம்",
+    "confidence": "நம்பிக்கை நிலை"
+  },
+  "common": {
+    "loading": "ஏற்றுகிறது...",
+    "error": "பிழை ஏற்பட்டது",
+    "retry": "மீண்டும் முயற்சிக்கவும்",
+    "save": "சேமி",
+    "cancel": "ரத்துசெய்",
+    "confirm": "உறுதிப்படுத்து",
+    "close": "மூடு",
+    "search": "தேடு",
+    "coming_soon": "விரைவில் வருகிறது",
+    "coming_soon_desc": "இந்த தொகுதி விரைவில் இணைக்கப்படும்"
+  }
+}
+
+
+
+================================================
+FILE: src/stores/appStore.js
+================================================
+import { create } from 'zustand';
+
+const useAppStore = create((set, get) => ({
+  // â”€â”€â”€ Navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  currentModule: 'bulk',
+  setCurrentModule: (module) => set({ currentModule: module }),
+
+  // â”€â”€â”€ Sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  sidebarCollapsed: false,
+  toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
+
+  // â”€â”€â”€ Theme â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  theme: localStorage.getItem('tn-theme') || 'light',
+  toggleTheme: () => {
+    const next = get().theme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('tn-theme', next);
+    document.documentElement.classList.toggle('dark', next === 'dark');
+    set({ theme: next });
+  },
+
+  // â”€â”€â”€ Officer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  officerId: localStorage.getItem('tn-officer-id') || 'OFC001',
+  setOfficerId: (id) => {
+    localStorage.setItem('tn-officer-id', id);
+    set({ officerId: id });
+  },
+
+  // â”€â”€â”€ Inspector Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  inspectorOpen: false,
+  inspectorData: null,
+  openInspector: (data) => set({ inspectorOpen: true, inspectorData: data }),
+  closeInspector: () => set({ inspectorOpen: false, inspectorData: null }),
+
+  // â”€â”€â”€ Bulk detail selected item â”€â”€â”€â”€â”€â”€â”€â”€
+  selectedSourceId: null,
+  setSelectedSourceId: (id) => set({ selectedSourceId: id }),
+
+  // â”€â”€â”€ App config (from API) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  appConfig: null,
+  setAppConfig: (config) => set({ appConfig: config }),
+
+  // â”€â”€â”€ Loading / Error states â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  isLoading: false,
+  setIsLoading: (v) => set({ isLoading: v }),
+  error: null,
+  setError: (e) => set({ error: e }),
+}));
+
+export default useAppStore;
+
+
