@@ -212,17 +212,17 @@ export default function BulkModule() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="btn btn-ghost btn-sm"
-            style={{ paddingRight: 28, appearance: 'none', cursor: 'pointer' }}
+            className="filter-select btn btn-ghost btn-sm"
+            style={{ paddingRight: 28, appearance: 'none', cursor: 'pointer', color: '#000000' }}
           >
-            <option value="">{t('bulk.filter_all')}</option>
-            <option value="pending">{getStatusLabel('pending')}</option>
-            <option value="ocr_done">{getStatusLabel('ocr_done')}</option>
-            <option value="draft_ready">{getStatusLabel('draft_ready')}</option>
-            <option value="approved">{getStatusLabel('approved')}</option>
-            <option value="rejected">{getStatusLabel('rejected')}</option>
+            <option value="" style={{ color: '#000000', backgroundColor: '#ffffff' }}>{t('bulk.filter_all')}</option>
+            <option value="pending" style={{ color: '#000000', backgroundColor: '#ffffff' }}>{getStatusLabel('pending')}</option>
+            <option value="ocr_done" style={{ color: '#000000', backgroundColor: '#ffffff' }}>{getStatusLabel('ocr_done')}</option>
+            <option value="draft_ready" style={{ color: '#000000', backgroundColor: '#ffffff' }}>{getStatusLabel('draft_ready')}</option>
+            <option value="approved" style={{ color: '#000000', backgroundColor: '#ffffff' }}>{getStatusLabel('approved')}</option>
+            <option value="rejected" style={{ color: '#000000', backgroundColor: '#ffffff' }}>{getStatusLabel('rejected')}</option>
           </select>
-          <ChevronDown size={14} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--color-text-muted)' }} />
+          <ChevronDown size={14} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#000000' }} />
         </div>
 
         {/* Department Filter */}
@@ -230,15 +230,15 @@ export default function BulkModule() {
           <select
             value={deptFilter}
             onChange={(e) => setDeptFilter(e.target.value)}
-            className="btn btn-ghost btn-sm tamil-text"
-            style={{ paddingRight: 28, appearance: 'none', cursor: 'pointer' }}
+            className="filter-select btn btn-ghost btn-sm tamil-text"
+            style={{ paddingRight: 28, appearance: 'none', cursor: 'pointer', color: '#000000' }}
           >
-            <option value="">{t('bulk.filter_by_dept')}</option>
+            <option value="" style={{ color: '#000000', backgroundColor: '#ffffff' }}>{t('bulk.filter_by_dept')}</option>
             {Object.entries(departments).map(([tamilName, engName]) => (
-              <option key={tamilName} value={tamilName}>{tamilName}</option>
+              <option key={tamilName} value={tamilName} style={{ color: '#000000', backgroundColor: '#ffffff' }}>{tamilName}</option>
             ))}
           </select>
-          <ChevronDown size={14} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--color-text-muted)' }} />
+          <ChevronDown size={14} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#000000' }} />
         </div>
 
         {/* Priority Filter */}
@@ -246,15 +246,15 @@ export default function BulkModule() {
           <select
             value={priorityFilter}
             onChange={(e) => setPriorityFilter(e.target.value)}
-            className="btn btn-ghost btn-sm"
-            style={{ paddingRight: 28, appearance: 'none', cursor: 'pointer' }}
+            className="filter-select btn btn-ghost btn-sm"
+            style={{ paddingRight: 28, appearance: 'none', cursor: 'pointer', color: '#000000' }}
           >
-            <option value="">{t('bulk.filter_by_priority')}</option>
-            <option value="HIGH">{getPriorityLabel('HIGH')}</option>
-            <option value="MEDIUM">{getPriorityLabel('MEDIUM')}</option>
-            <option value="LOW">{getPriorityLabel('LOW')}</option>
+            <option value="" style={{ color: '#000000', backgroundColor: '#ffffff' }}>{t('bulk.filter_by_priority')}</option>
+            <option value="HIGH" style={{ color: '#000000', backgroundColor: '#ffffff' }}>{getPriorityLabel('HIGH')}</option>
+            <option value="MEDIUM" style={{ color: '#000000', backgroundColor: '#ffffff' }}>{getPriorityLabel('MEDIUM')}</option>
+            <option value="LOW" style={{ color: '#000000', backgroundColor: '#ffffff' }}>{getPriorityLabel('LOW')}</option>
           </select>
-          <ChevronDown size={14} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--color-text-muted)' }} />
+          <ChevronDown size={14} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#000000' }} />
         </div>
       </div>
 

@@ -5,10 +5,10 @@ import { generateContent } from '../../lib/api';
 import { Stamp, Sparkles, Send, FileCheck } from 'lucide-react';
 
 const TEMPLATES = [
-  { id: 'press_release', title: 'செய்தி குறிப்பு (Press Release)', desc: 'மாவட்ட ஆட்சியர் அலுவலக அதிகாரப்பூர்வ செய்தி வெளியீடு' },
-  { id: 'circular', title: 'அலுவலக சுற்றறிக்கை (Official Circular)', desc: 'துறை சார்ந்த அனைத்து அலுவலர்களுக்கான சுற்றறிக்கை' },
-  { id: 'memo', title: 'அலுவலக குறிப்பாணை (Office Memorandum)', desc: 'உள் விவகாரங்கள் மற்றும் ஒழுங்குமுறை உத்தரவுகள்' },
-  { id: 'meeting_minutes', title: 'கூட்ட நடவடிக்கை பதிவேடு (Minutes)', desc: 'திங்கள் மக்கள் குறைதீர்க்கும் நாள் கூட்ட விவரம்' }
+  { id: 'press_release', titleKey: 'content.press_release_title', descKey: 'content.press_release_desc' },
+  { id: 'circular', titleKey: 'content.circular_title', descKey: 'content.circular_desc' },
+  { id: 'memo', titleKey: 'content.memo_title', descKey: 'content.memo_desc' },
+  { id: 'meeting_minutes', titleKey: 'content.meeting_minutes_title', descKey: 'content.meeting_minutes_desc' },
 ];
 
 export default function ContentModule() {
@@ -39,7 +39,7 @@ export default function ContentModule() {
       <div>
         <h1 className="module-title tamil-text">{t('sidebar.content')}</h1>
         <p style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }} className="tamil-text">
-          அரசு விதிமுறைகளுக்குட்பட்ட அதிகாரப்பூர்வ செய்தி வெளியீடுகள், சுற்றறிக்கைகள் மற்றும் குறிப்பாணைகள் தயாரித்தல்
+          {t('content.subtitle')}
         </p>
       </div>
 
@@ -56,10 +56,10 @@ export default function ContentModule() {
             }}
           >
             <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--color-text-primary)' }} className="tamil-text">
-              {tmpl.title}
+              {t(tmpl.titleKey)}
             </div>
             <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginTop: 4 }} className="tamil-text">
-              {tmpl.desc}
+              {t(tmpl.descKey)}
             </div>
           </div>
         ))}
@@ -68,11 +68,11 @@ export default function ContentModule() {
       <form onSubmit={handleGenerate} className="card" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <div>
           <label className="tamil-text" style={{ fontSize: '0.85rem', fontWeight: 600, display: 'block', marginBottom: 6 }}>
-            பொருள் (Subject):
+            {t('content.subject')}:
           </label>
           <input
             type="text"
-            placeholder="எ.கா: ஈரோடு மாவட்டத்தில் ஜல் ஜீவன் இயக்க திட்ட ஆய்வுக் கூட்டம் - செய்தி குறிப்பு"
+            placeholder={t('content.subject_placeholder')}
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             className="tamil-text"
@@ -90,11 +90,11 @@ export default function ContentModule() {
 
         <div>
           <label className="tamil-text" style={{ fontSize: '0.85rem', fontWeight: 600, display: 'block', marginBottom: 6 }}>
-            முக்கிய குறிப்புகள் (Key Points / Context):
+            {t('content.key_points')}:
           </label>
           <textarea
             rows={4}
-            placeholder="கூட்டத்தின் முக்கிய முடிவுகள், கலந்து கொண்ட அலுவலர்கள், பயனாளிகள் எண்ணிக்கை..."
+            placeholder={t('content.key_points_placeholder')}
             value={details}
             onChange={(e) => setDetails(e.target.value)}
             className="tamil-text"
@@ -113,14 +113,14 @@ export default function ContentModule() {
 
         <button type="submit" className="btn btn-primary" disabled={!subject.trim() || loading} style={{ alignSelf: 'flex-start' }}>
           <Sparkles size={16} />
-          <span className="tamil-text">{loading ? "உருவாக்குகிறது..." : "உள்ளடக்கம் உருவாக்கு"}</span>
+          <span className="tamil-text">{loading ? t('content.generating') : t('content.generate_btn')}</span>
         </button>
 
         {result && (
           <div style={{ padding: 16, background: 'var(--color-surface-hover)', borderRadius: 8, marginTop: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--color-tn-success)' }}>
               <FileCheck size={18} />
-              <span className="tamil-text" style={{ fontWeight: 700 }}>வெற்றிகரமாக பதிவு செய்யப்பட்டது</span>
+              <span className="tamil-text" style={{ fontWeight: 700 }}>{t('content.success_title')}</span>
             </div>
             <p className="tamil-text" style={{ fontSize: '0.9rem', marginTop: 8 }}>
               {result.message}

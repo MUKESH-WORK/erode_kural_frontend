@@ -212,7 +212,7 @@ export default function BulkDetailView({ sourceId, onBack, onRefresh }) {
         {activeTab === 'tab_ocr' && (
           <div>
             {ocr_pages.length === 0 ? (
-              <p className="tamil-text" style={{ color: 'var(--color-text-muted)' }}>OCR தரவு இல்லை</p>
+              <p className="tamil-text" style={{ color: 'var(--color-text-muted)' }}>{t('detail.no_ocr')}</p>
             ) : (
               ocr_pages.map((page, i) => (
                 <div key={page.id || i} style={{ marginBottom: 24 }}>
@@ -247,7 +247,7 @@ export default function BulkDetailView({ sourceId, onBack, onRefresh }) {
         {activeTab === 'tab_entities' && (
           <div>
             {entities.length === 0 ? (
-              <p className="tamil-text" style={{ color: 'var(--color-text-muted)' }}>பிரித்தெடுக்கப்பட்ட நிறுவனங்கள் இல்லை</p>
+              <p className="tamil-text" style={{ color: 'var(--color-text-muted)' }}>{t('detail.no_entities')}</p>
             ) : (
               <table className="data-table">
                 <thead>
@@ -289,7 +289,7 @@ export default function BulkDetailView({ sourceId, onBack, onRefresh }) {
         {activeTab === 'tab_classification' && (
           <div>
             {!classification ? (
-              <p className="tamil-text" style={{ color: 'var(--color-text-muted)' }}>வகைப்பாடு இல்லை</p>
+              <p className="tamil-text" style={{ color: 'var(--color-text-muted)' }}>{t('detail.no_classification')}</p>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <div className="card" style={{ borderLeft: '4px solid var(--color-tn-primary)' }}>
@@ -328,7 +328,7 @@ export default function BulkDetailView({ sourceId, onBack, onRefresh }) {
         {activeTab === 'tab_draft' && (
           <div>
             {!draft ? (
-              <p className="tamil-text" style={{ color: 'var(--color-text-muted)' }}>வரைவு தயாரிக்கப்படவில்லை</p>
+              <p className="tamil-text" style={{ color: 'var(--color-text-muted)' }}>{t('detail.no_draft')}</p>
             ) : (
               <>
                 {/* Hallucination Score */}
@@ -422,7 +422,7 @@ export default function BulkDetailView({ sourceId, onBack, onRefresh }) {
         {activeTab === 'tab_grounding' && (
           <div>
             {Object.keys(groundingMap).length === 0 ? (
-              <p className="tamil-text" style={{ color: 'var(--color-text-muted)' }}>ஆதார தரவு இல்லை</p>
+              <p className="tamil-text" style={{ color: 'var(--color-text-muted)' }}>{t('detail.no_grounding')}</p>
             ) : (
               <table className="grounding-table">
                 <thead>
@@ -446,7 +446,7 @@ export default function BulkDetailView({ sourceId, onBack, onRefresh }) {
                     <tr key={field}>
                       <td className="field-name tamil-text">{field}</td>
                       <td className="field-value tamil-text">
-                        {entry.value || <span style={{ color: 'var(--color-tn-danger)' }}>[தகவல் இல்லை]</span>}
+                        {entry.value || <span style={{ color: 'var(--color-tn-danger)' }}>{t('common.no_data')}</span>}
                       </td>
                       <td>
                         <div className="field-value" style={{ fontSize: '0.75rem' }}>

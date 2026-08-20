@@ -7,7 +7,6 @@ import {
   Send,
   Bot,
   User,
-  Sparkles,
   Copy,
   Check,
   Volume2,
@@ -16,50 +15,27 @@ import {
   Mic,
   MicOff,
   FileText,
-  ChevronRight,
-  ShieldCheck,
-  Zap,
   RefreshCw,
   Download,
   Paperclip,
   Upload,
   X,
   Plus,
+  Sparkles,
+  ChevronRight,
 } from 'lucide-react';
 
-const CATEGORIZED_PROMPTS = [
-  {
-    category: 'நிலுவை விவரங்கள்',
-    subtitle: 'Pending Workload & File Status',
-    icon: Zap,
-    color: '#3b82f6',
-    prompt: 'இன்றைய முக்கிய கோப்புகள் மற்றும் நிலுவை விவரங்கள் என்ன?',
-  },
-  {
-    category: 'வருவாய்த்துறை',
-    subtitle: 'Revenue Dept Guidelines',
-    icon: FileText,
-    color: '#10b981',
-    prompt: 'வருவாய்த்துறை நில அளவீடு தொடர்பான அரசு வழிகாட்டல்கள் என்ன?',
-  },
-  {
-    category: 'சமூக நலத்துறை',
-    subtitle: 'Social Welfare Petitions',
-    icon: ShieldCheck,
-    color: '#f59e0b',
-    prompt: 'சமூக நலத்துறை முதியோர் உதவித்தொகை மனுக்கள் நிலை என்ன?',
-  },
-  {
-    category: 'பட்டா மாறுதல்',
-    subtitle: 'Patta Transfer Procedure',
-    icon: Sparkles,
-    color: '#8b5cf6',
-    prompt: 'பொதுமக்களின் பட்டா மாறுதல் மனுவின் சரிபார்ப்பு நடைமுறை என்ன?',
-  },
+const DOC_SUGGESTION_KEYS = [
+  'general.doc_suggestion1',
+  'general.doc_suggestion2',
+  'general.doc_suggestion3',
+  'general.doc_suggestion4',
 ];
 
+
+
 export default function GeneralModule() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { officerId } = useAppStore();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -92,7 +68,7 @@ export default function GeneralModule() {
   const toggleListening = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert('உங்கள் உலாவியில் குரல் உள்ளீடு வசதி இல்லை (Web Speech API is not supported).');
+      alert('Speech recognition is not supported in this browser.');
       return;
     }
 
@@ -102,7 +78,7 @@ export default function GeneralModule() {
     }
 
     const recognition = new SpeechRecognition();
-    recognition.lang = 'ta-IN';
+    recognition.lang = i18n.language === 'ta' ? 'ta-IN' : 'en-IN';
     recognition.continuous = false;
     recognition.interimResults = false;
 
@@ -130,7 +106,7 @@ export default function GeneralModule() {
 
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'ta-IN';
+    utterance.lang = i18n.language === 'ta' ? 'ta-IN' : 'en-IN';
     utterance.onend = () => setSpeakingId(null);
     utterance.onerror = () => setSpeakingId(null);
 
@@ -147,7 +123,7 @@ export default function GeneralModule() {
 
   // Clear Conversation
   const handleClear = () => {
-    if (window.confirm('உரையாடலை அழிக்க விரும்புகிறீர்களா?')) {
+    if (window.confirm(t('general.confirm_clear'))) {
       setMessages([]);
       window.speechSynthesis?.cancel();
       setSpeakingId(null);
@@ -175,14 +151,15 @@ export default function GeneralModule() {
     if ((!rawText.trim() && !file) || loading) return;
 
     const messageText = file 
-      ? `[ஆவணம்: ${file.name}] ${rawText.trim() || 'ஆவணம் பெறப்பட்டது.'}`
+      ? `[${t('common.attachment')}: ${file.name}] ${rawText.trim() || t('general.doc_received')}`
       : rawText.trim();
 
+    const currentLocale = i18n.language === 'ta' ? 'ta-IN' : 'en-IN';
     const userMsg = {
       id: `usr_${Date.now()}`,
       sender: 'user',
       text: messageText,
-      timestamp: new Date().toLocaleTimeString('ta-IN', { hour: '2-digit', minute: '2-digit' }),
+      timestamp: new Date().toLocaleTimeString(currentLocale, { hour: '2-digit', minute: '2-digit' }),
     };
 
     setMessages((prev) => [...prev, userMsg]);
@@ -192,20 +169,20 @@ export default function GeneralModule() {
 
     try {
       const res = await sendChat(messageText, officerId);
-      const aiContent = res.blocks?.[0]?.content || 'செயலாக்கப்பட்டது.';
+      const aiContent = res.blocks?.[0]?.content || 'Completed.';
       const aiMsg = {
         id: res.message_id || `ai_${Date.now()}`,
         sender: 'ai',
         text: aiContent,
-        timestamp: new Date().toLocaleTimeString('ta-IN', { hour: '2-digit', minute: '2-digit' }),
+        timestamp: new Date().toLocaleTimeString(currentLocale, { hour: '2-digit', minute: '2-digit' }),
       };
       setMessages((prev) => [...prev, aiMsg]);
     } catch (err) {
       const errorMsg = {
         id: `err_${Date.now()}`,
         sender: 'ai',
-        text: `பிழை: ${err.message || 'சேவையகத்தை தொடர்பு கொள்ள முடியவில்லை.'}`,
-        timestamp: new Date().toLocaleTimeString('ta-IN', { hour: '2-digit', minute: '2-digit' }),
+        text: `${t('common.error')}: ${err.message || t('general.server_error')}`,
+        timestamp: new Date().toLocaleTimeString(currentLocale, { hour: '2-digit', minute: '2-digit' }),
         isError: true,
       };
       setMessages((prev) => [...prev, errorMsg]);
@@ -241,6 +218,25 @@ export default function GeneralModule() {
           boxShadow: '0 2px 12px rgba(0, 0, 0, 0.03)',
         }}
       >
+        {/* Subtle Background Emblem Watermark */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            pointerEvents: 'none',
+            zIndex: 0,
+            opacity: 0.05,
+            userSelect: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <TnEmblem size={280} opacity={1} />
+        </div>
+
         {/* Actions Bar if messages present */}
         {messages.length > 0 && (
           <div
@@ -250,12 +246,14 @@ export default function GeneralModule() {
               gap: 8,
               paddingBottom: 6,
               borderBottom: '1px solid var(--color-surface-border)',
+              position: 'relative',
+              zIndex: 1,
             }}
           >
             <button
               onClick={handleExport}
               className="btn btn-ghost"
-              title="Export Transcript"
+              title={t('general.export')}
               style={{
                 fontSize: '0.74rem',
                 padding: '4px 10px',
@@ -267,12 +265,12 @@ export default function GeneralModule() {
               }}
             >
               <Download size={13} />
-              <span>ஏற்றுமதி</span>
+              <span>{t('general.export')}</span>
             </button>
             <button
               onClick={handleClear}
               className="btn btn-ghost"
-              title="Clear Chat"
+              title={t('general.clear')}
               style={{
                 fontSize: '0.74rem',
                 padding: '4px 10px',
@@ -284,7 +282,7 @@ export default function GeneralModule() {
               }}
             >
               <Trash2 size={13} />
-              <span>அழி</span>
+              <span>{t('general.clear')}</span>
             </button>
           </div>
         )}
@@ -300,6 +298,8 @@ export default function GeneralModule() {
               alignItems: 'center',
               gap: 16,
               padding: '12px 10px',
+              position: 'relative',
+              zIndex: 1,
             }}
           >
             {/* Hero Emblem Banner */}
@@ -323,7 +323,7 @@ export default function GeneralModule() {
                 className="tamil-text"
                 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-text-primary)', marginTop: 4 }}
               >
-                வணக்கம், அலுவலர் <span style={{ color: 'var(--color-tn-accent-light, #c8a951)' }}>{officerId}</span>!
+                {t('general.welcome', { officerId })}
               </h2>
               <p
                 className="tamil-text"
@@ -334,124 +334,12 @@ export default function GeneralModule() {
                   lineHeight: 1.5,
                 }}
               >
-                ஈரோடு மாவட்ட நிர்வாக வினவல்கள், அரசாணைகள், கோப்பு நிலை மற்றும் வழிகாட்டுதல்களை கேட்கலாம்.
+                {t('general.subtitle')}
               </p>
-            </div>
-
-            {/* Categorized Quick Prompt Cards Grid */}
-            <div
-              className="quick-actions-grid"
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-                gap: 12,
-                width: '100%',
-                maxWidth: '100%',
-                boxSizing: 'border-box',
-                marginTop: 4,
-              }}
-            >
-              {CATEGORIZED_PROMPTS.map((item, i) => {
-                const IconComp = item.icon;
-                return (
-                  <button
-                    key={i}
-                    onClick={() => handleSend(item.prompt)}
-                    className="quick-action-card"
-                    style={{
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      gap: 12,
-                      padding: '12px 14px',
-                      borderRadius: 14,
-                      background: 'var(--color-surface-bg)',
-                      border: '1px solid var(--color-surface-border)',
-                      textAlign: 'left',
-                      cursor: 'pointer',
-                      width: '100%',
-                      minWidth: 0,
-                      maxWidth: '100%',
-                      boxSizing: 'border-box',
-                      overflow: 'hidden',
-                      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = item.color;
-                      e.currentTarget.style.transform = 'translateY(-2px)';
-                      e.currentTarget.style.boxShadow = `0 6px 16px ${item.color}15`;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = 'var(--color-surface-border)';
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
-                  >
-                    <div
-                      style={{
-                        padding: 10,
-                        borderRadius: 10,
-                        background: `${item.color}15`,
-                        color: item.color,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                      }}
-                    >
-                      <IconComp size={18} />
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
-                      <div
-                        className="tamil-text"
-                        style={{
-                          fontSize: '0.86rem',
-                          fontWeight: 700,
-                          color: 'var(--color-text-primary)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          minWidth: 0,
-                        }}
-                      >
-                        <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.category}</span>
-                        <ChevronRight size={14} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
-                      </div>
-                      <div
-                        style={{
-                          fontSize: '0.72rem',
-                          color: 'var(--color-text-secondary)',
-                          marginTop: 2,
-                          minWidth: 0,
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {item.subtitle}
-                      </div>
-                      <div
-                        className="tamil-text"
-                        style={{
-                          fontSize: '0.76rem',
-                          color: 'var(--color-text-muted)',
-                          marginTop: 4,
-                          lineHeight: 1.35,
-                          whiteSpace: 'normal',
-                          overflowWrap: 'anywhere',
-                          minWidth: 0,
-                          overflow: 'hidden',
-                        }}
-                      >
-                        "{item.prompt}"
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
             </div>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, overflowY: 'auto', flex: 1 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, overflowY: 'auto', flex: 1, position: 'relative', zIndex: 1 }}>
             {messages.map((m) => {
               const isUser = m.sender === 'user';
               return (
@@ -547,10 +435,10 @@ export default function GeneralModule() {
                               gap: 3,
                               fontSize: '0.72rem',
                             }}
-                            title="Copy text"
+                            title={t('general.copy')}
                           >
                             {copiedId === m.id ? <Check size={12} /> : <Copy size={12} />}
-                            <span>{copiedId === m.id ? 'பிரதி எடுக்கப்பட்டது' : 'பிரதி எடு'}</span>
+                            <span>{copiedId === m.id ? t('general.copied') : t('general.copy')}</span>
                           </button>
 
                           <span>•</span>
@@ -566,10 +454,10 @@ export default function GeneralModule() {
                               gap: 3,
                               fontSize: '0.72rem',
                             }}
-                            title="Read Aloud"
+                            title={t('general.read')}
                           >
                             {speakingId === m.id ? <VolumeX size={12} /> : <Volume2 size={12} />}
-                            <span>{speakingId === m.id ? 'நிறுத்து' : 'வாசி'}</span>
+                            <span>{speakingId === m.id ? t('general.stop') : t('general.read')}</span>
                           </button>
                         </>
                       )}
@@ -611,7 +499,7 @@ export default function GeneralModule() {
             >
               <RefreshCw className="animate-spin text-blue-500" size={16} />
               <span className="tamil-text" style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
-                அமைப்பிலிருந்து தரவு சேகரித்து செயலாக்குகிறது...
+                {t('general.processing')}
               </span>
             </div>
           </div>
@@ -620,7 +508,6 @@ export default function GeneralModule() {
       </div>
 
       {/* Input Dock */}
-      {/* Interactive Chat Input Box matching DocumentModule */}
       <div
         className="chat-input-container"
         style={{
@@ -649,37 +536,121 @@ export default function GeneralModule() {
           onChange={handleFileChange}
         />
 
-        {/* Attached File Preview Chip */}
+        {/* Attached File Section: 1. Suggestions (Vertical), 2. Document Chip */}
         {file && (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '6px 12px',
-              borderRadius: 10,
-              background: 'var(--color-surface-bg)',
-              border: '1px solid var(--color-surface-border)',
-              fontSize: '0.82rem',
-              color: 'var(--color-text-primary)',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflow: 'hidden' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {/* 1. 2x2 Grid of 4 Document Suggestions (Shown only when input is empty) */}
+            {input.trim() === '' && (
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                  gap: 8,
+                  width: '100%',
+                  boxSizing: 'border-box',
+                }}
+              >
+                {DOC_SUGGESTION_KEYS.map((key, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => handleSend(t(key))}
+                    className="tamil-text"
+                    style={{
+                      padding: '8px 12px',
+                      borderRadius: 10,
+                      background: 'rgba(200, 169, 81, 0.08)',
+                      border: '1px solid rgba(200, 169, 81, 0.25)',
+                      color: 'var(--color-text-primary)',
+                      fontSize: '0.8rem',
+                      fontWeight: 500,
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: 6,
+                      width: '100%',
+                      boxSizing: 'border-box',
+                      minWidth: 0,
+                      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'rgba(200, 169, 81, 0.18)';
+                      e.currentTarget.style.borderColor = 'var(--color-tn-accent)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'rgba(200, 169, 81, 0.08)';
+                      e.currentTarget.style.borderColor = 'rgba(200, 169, 81, 0.25)';
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, overflow: 'hidden' }}>
+                      <Sparkles size={13} style={{ color: 'var(--color-tn-accent)', flexShrink: 0 }} />
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
+                        {t(key)}
+                      </span>
+                    </div>
+                    <ChevronRight size={13} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* 2. Attached File Preview Chip (Single-Line Inline Layout) */}
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '6px 12px',
+                borderRadius: 10,
+                background: 'var(--color-surface-bg)',
+                border: '1px solid var(--color-surface-border)',
+                fontSize: '0.82rem',
+                color: 'var(--color-text-primary)',
+                maxWidth: '100%',
+                boxSizing: 'border-box',
+                alignSelf: 'flex-start',
+              }}
+            >
               <FileText size={16} style={{ color: 'var(--color-tn-primary)', flexShrink: 0 }} />
-              <span style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <span
+                style={{
+                  fontWeight: 600,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  maxWidth: '300px',
+                }}
+              >
                 {file.name}
               </span>
-              <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)' }}>
-                ({(file.size / 1024).toFixed(1)} KB)
+              <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', flexShrink: 0 }}>
+                · {(file.size / 1024).toFixed(1)} KB
               </span>
+              <button
+                type="button"
+                onClick={() => setFile(null)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: 'var(--color-text-muted)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: 2,
+                  borderRadius: 4,
+                  flexShrink: 0,
+                  transition: 'color 0.2s ease',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = '#ef4444')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-text-muted)')}
+                title="Remove File"
+              >
+                <X size={14} />
+              </button>
             </div>
-            <button
-              onClick={() => setFile(null)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)' }}
-              title="Remove File"
-            >
-              <X size={16} />
-            </button>
           </div>
         )}
 
@@ -689,7 +660,7 @@ export default function GeneralModule() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="இங்கே உங்கள் கேள்வியை தட்டச்சு செய்யவும்... (Enter அழுத்தவும்)"
+          placeholder={t('general.placeholder')}
           className="chat-input tamil-text"
           style={{
             width: '100%',
@@ -732,7 +703,7 @@ export default function GeneralModule() {
               title="Upload Document (.pdf, .docx, .txt)"
             >
               <Paperclip size={16} />
-              <span>இணைப்பு</span>
+              <span>{t('general.attachment')}</span>
             </button>
 
             {/* Voice Input Mic Button */}
@@ -749,10 +720,10 @@ export default function GeneralModule() {
                 alignItems: 'center',
                 gap: 6,
               }}
-              title={isListening ? 'Stop Listening' : 'Voice Input (Tamil)'}
+              title={isListening ? 'Stop Listening' : t('general.voice_input')}
             >
               {isListening ? <MicOff size={16} className="animate-pulse" /> : <Mic size={16} />}
-              <span>குரல் உள்ளீடு</span>
+              <span>{t('general.voice_input')}</span>
             </button>
           </div>
 
@@ -773,7 +744,7 @@ export default function GeneralModule() {
               alignItems: 'center',
               gap: 8,
               fontWeight: 600,
-              boxShadow: !input.trim() || loading ? 'none' : '0 4px 12px rgba(19, 136, 8, 0.35)',
+              boxShadow: !input.trim() || loading ? 'none' : '0 4px 12px rgba(13, 136, 8, 0.35)',
               transition: 'all 0.2s ease',
             }}
           >
@@ -781,7 +752,7 @@ export default function GeneralModule() {
               <RefreshCw size={16} className="animate-spin text-white" />
             ) : (
               <>
-                <span style={{ fontSize: '0.84rem' }}>அனுப்பு</span>
+                <span style={{ fontSize: '0.84rem' }}>{t('general.send')}</span>
                 <Send size={15} />
               </>
             )}

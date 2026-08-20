@@ -1,16 +1,18 @@
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import i18n from 'i18next';
 
 /** Merge Tailwind classes safely */
 export function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
 
-/** Format ISO date to Tamil-friendly display */
-export function formatDate(isoStr) {
+/** Format ISO date to locale-friendly display */
+export function formatDate(isoStr, lang) {
   if (!isoStr) return '—';
   try {
-    return new Date(isoStr).toLocaleString('ta-IN', {
+    const locale = (lang || i18n.language) === 'ta' ? 'ta-IN' : 'en-IN';
+    return new Date(isoStr).toLocaleString(locale, {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -35,8 +37,23 @@ export function getConfidenceLevel(score) {
   return 'low';
 }
 
-/** Get status display label (Tamil) */
-export function getStatusLabel(status) {
+/** Get status display label (localized) */
+export function getStatusLabel(status, t) {
+  if (t) {
+    return t(`status.${status}`, { defaultValue: status });
+  }
+  const lang = i18n.language;
+  if (lang === 'en') {
+    const map = {
+      pending: 'Pending',
+      ocr_done: 'OCR Done',
+      classified: 'Classified',
+      draft_ready: 'Draft Ready',
+      approved: 'Approved',
+      rejected: 'Rejected',
+    };
+    return map[status] || status;
+  }
   const map = {
     pending: 'நிலுவையில்',
     ocr_done: 'OCR முடிந்தது',
@@ -48,8 +65,20 @@ export function getStatusLabel(status) {
   return map[status] || status;
 }
 
-/** Get priority label (Tamil) */
-export function getPriorityLabel(priority) {
+/** Get priority label (localized) */
+export function getPriorityLabel(priority, t) {
+  if (t) {
+    return t(`priority.${priority}`, { defaultValue: priority });
+  }
+  const lang = i18n.language;
+  if (lang === 'en') {
+    const map = {
+      HIGH: 'High',
+      MEDIUM: 'Medium',
+      LOW: 'Low',
+    };
+    return map[priority] || priority;
+  }
   const map = {
     HIGH: 'உயர்',
     MEDIUM: 'நடுத்தர',

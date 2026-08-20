@@ -69,10 +69,10 @@ import {
 const CHART_COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#14b8a6', '#f97316'];
 
 const RECOMMENDED_PROMPTS = [
-  { id: 'summary', label: '📊 Summarize this data', query: 'Summarize this dataset and provide an executive overview' },
-  { id: 'trends', label: '📈 Explain the trends', query: 'Explain the main trends, growth patterns, and department volumes' },
-  { id: 'insights', label: '🔎 Find key insights', query: 'What are the major findings and grounded insights for Erode District?' },
-  { id: 'anomalies', label: '⚠️ Find unusual values', query: 'Are there any unusual values, anomalies, or statistical outliers in this dataset?' },
+  { id: 'summary', labelKey: 'data.prompt_summary', queryKey: 'data.prompt_summary_query' },
+  { id: 'trends', labelKey: 'data.prompt_trends', queryKey: 'data.prompt_trends_query' },
+  { id: 'insights', labelKey: 'data.prompt_insights', queryKey: 'data.prompt_insights_query' },
+  { id: 'anomalies', labelKey: 'data.prompt_anomalies', queryKey: 'data.prompt_anomalies_query' },
 ];
 
 export default function DataModule() {
@@ -465,16 +465,16 @@ export default function DataModule() {
       <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
         <div>
           <h1 className="module-title tamil-text" style={{ fontSize: '1.4rem', fontWeight: 700 }}>
-            {t('sidebar.data')} — தரவு பகுப்பாய்வு மற்றும் காட்சிப்படுத்தல் பணிமனை
+            {t('data.title')}
           </h1>
           <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }} className="tamil-text">
-            ஈரோடு மாவட்ட ஆட்சியரகம் — Excel / CSV தரவுகளை பகுப்பாய்வு செய்து தானியங்கி வரைபடங்கள், நுண்ணறிவுகள் மற்றும் உரையாடல்கள்
+            {t('data.subtitle')}
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <button className="btn btn-ghost btn-sm" onClick={loadDatasetsList} disabled={loading} title="புதுப்பி">
+          <button className="btn btn-ghost btn-sm" onClick={loadDatasetsList} disabled={loading} title={t('common.retry')}>
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-            <span style={{ fontSize: '0.8rem' }}>புதுப்பி</span>
+            <span style={{ fontSize: '0.8rem' }}>{t('common.retry')}</span>
           </button>
         </div>
       </div>
@@ -841,7 +841,7 @@ export default function DataModule() {
           <div style={{ borderBottom: '1px solid var(--color-surface-border)', paddingBottom: 10, flexShrink: 0 }}>
             <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: 8 }} className="tamil-text">
               <Sparkles size={18} style={{ color: '#10b981' }} />
-              ✨ AI Data Assistant (தரவு AI உதவியாளர்)
+              ✨ {t('data.ask_ai')}
             </div>
             <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginTop: 2 }}>
               Ask questions & view automatic insights about your data
@@ -913,7 +913,7 @@ export default function DataModule() {
             {chatLoading && (
               <div style={{ alignSelf: 'flex-start', padding: '8px 12px', borderRadius: 12, background: 'var(--color-surface-hover)', fontSize: '0.8rem', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}>
                 <RefreshCw size={14} className="animate-spin" style={{ color: '#10b981' }} />
-                <span>தரவு பகுப்பாய்வு செய்யப்படுகிறது...</span>
+                <span>{t('common.analyzing')}</span>
               </div>
             )}
             <div ref={chatEndRef} />
@@ -966,7 +966,7 @@ export default function DataModule() {
                   handleSendChatMessage();
                 }
               }}
-              placeholder={selectedChart ? `Ask me about "${selectedChart.title}"...` : 'தரவுகளைப் பற்றி கேளுங்கள்...'}
+              placeholder={selectedChart ? `Ask me about "${selectedChart.title}"...` : t('data.ai_placeholder')}
               className="chat-input tamil-text"
               style={{
                 width: '100%',
@@ -997,10 +997,10 @@ export default function DataModule() {
                   alignItems: 'center',
                   gap: 4,
                 }}
-                title={isListening ? 'Stop Listening' : 'Voice Input (Tamil)'}
+                title={isListening ? 'Stop Listening' : t('common.voice_input')}
               >
                 {isListening ? <MicOff size={14} className="animate-pulse" /> : <Mic size={14} />}
-                <span>குரல் உள்ளீடு</span>
+                <span>{t('common.voice_input')}</span>
               </button>
 
               {/* India Green Send Button */}
@@ -1022,7 +1022,7 @@ export default function DataModule() {
                   boxShadow: !chatInput.trim() || chatLoading ? 'none' : '0 2px 8px rgba(19, 136, 8, 0.35)',
                 }}
               >
-                <span>அனுப்பு</span>
+                <span>{t('common.send')}</span>
                 <Send size={13} />
               </button>
             </div>

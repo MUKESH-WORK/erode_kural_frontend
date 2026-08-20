@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 const useAppStore = create((set, get) => ({
   // ─── Navigation ───────────────────────
-  currentModule: 'bulk',
+  currentModule: 'general',
   setCurrentModule: (module) => set({ currentModule: module }),
 
   // ─── Sidebar ──────────────────────────

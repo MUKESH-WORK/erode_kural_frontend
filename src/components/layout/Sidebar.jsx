@@ -110,14 +110,18 @@ export default function Sidebar() {
           borderTop: '1px solid rgba(255,255,255,0.1)',
           paddingTop: 8,
           paddingBottom: 16,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2,
         }}
       >
         {NAV_BOTTOM.map((mod) => {
           const Icon = mod.icon;
+          const isActive = currentModule === mod.id;
           return (
             <button
               key={mod.id}
-              className="nav-item"
+              className={cn('nav-item', isActive && 'active')}
               onClick={() => setCurrentModule(mod.id)}
               title={t(`sidebar.${mod.id}`)}
             >
@@ -136,7 +140,11 @@ export default function Sidebar() {
           title={sidebarCollapsed ? 'Expand' : 'Collapse'}
           style={{ marginTop: 4 }}
         >
-          {sidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+          {sidebarCollapsed ? (
+            <ChevronRight size={20} style={{ flexShrink: 0 }} />
+          ) : (
+            <ChevronLeft size={20} style={{ flexShrink: 0 }} />
+          )}
           {!sidebarCollapsed && <span className="nav-label">Collapse</span>}
         </button>
       </div>

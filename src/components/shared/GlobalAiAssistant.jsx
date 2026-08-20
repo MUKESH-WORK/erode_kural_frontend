@@ -17,8 +17,10 @@ import {
 import useChatStore from '../../stores/useChatStore';
 import useAppStore from '../../stores/appStore';
 import TnEmblem from '../icons/TnEmblem';
+import { useTranslation } from 'react-i18next';
 
 export default function GlobalAiAssistant() {
+  const { t, i18n } = useTranslation();
   const {
     isOpen,
     toggleOpen,
@@ -128,10 +130,10 @@ export default function GlobalAiAssistant() {
           </div>
           <div>
             <h3 className="text-sm font-semibold text-amber-300 font-serif leading-tight">
-              ஈரோடு குரல் AI உதவி
+              {t('global_ai.title')}
             </h3>
             <p className="text-[10px] text-slate-400 font-medium">
-              Erode Collectorate Smart Assistant
+              {t('global_ai.subtitle')}
             </p>
           </div>
         </div>
@@ -286,7 +288,7 @@ export default function GlobalAiAssistant() {
         {isLoading && (
           <div className="flex items-center gap-2 p-3 rounded-xl bg-slate-800/80 border border-slate-700 text-xs text-amber-300 w-fit">
             <Sparkles className="w-4 h-4 animate-spin text-amber-400" />
-            <span>பதில் செயலாக்கப்படுகிறது... (Thinking...)</span>
+            <span>{t('global_ai.thinking')}</span>
           </div>
         )}
 
@@ -295,24 +297,24 @@ export default function GlobalAiAssistant() {
 
       {/* ─── Quick Prompt Chips ──────────────────────────────── */}
       <div className="px-3 py-1.5 bg-slate-950/80 border-t border-slate-800 flex items-center gap-1.5 overflow-x-auto no-scrollbar text-[11px]">
-        <span className="text-slate-500 font-medium whitespace-nowrap pl-1">விரைவு:</span>
+        <span className="text-slate-500 font-medium whitespace-nowrap pl-1">{t('global_ai.quick')}</span>
         <button
-          onClick={() => sendMessage('நிலுவையில் உள்ள மனுக்கள் எத்தனை?')}
+          onClick={() => sendMessage(t('general.prompt_pending'))}
           className="px-2 py-0.5 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 whitespace-nowrap transition-colors"
         >
-          நிலுவை மனுக்கள்
+          {t('global_ai.quick_pending')}
         </button>
         <button
-          onClick={() => sendMessage('வருவாய்த்துறை மனுக்கள் விபரம்')}
+          onClick={() => sendMessage(t('general.prompt_revenue'))}
           className="px-2 py-0.5 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 whitespace-nowrap transition-colors"
         >
-          வருவாய்த்துறை
+          {t('global_ai.quick_revenue')}
         </button>
         <button
-          onClick={() => sendMessage('கிடைக்கக்கூடிய தரவுத்தொகுப்புகள்')}
+          onClick={() => sendMessage(t('data.title'))}
           className="px-2 py-0.5 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 whitespace-nowrap transition-colors"
         >
-          தரவுத்தொகுப்பு
+          {t('global_ai.quick_datasets')}
         </button>
       </div>
 
@@ -340,10 +342,10 @@ export default function GlobalAiAssistant() {
           onKeyDown={handleKeyDown}
           placeholder={
             isListening
-              ? 'பேசவும்... (Listening...)'
-              : speechLang === 'ta-IN'
-              ? 'கேள்விகளைக் கேட்கவும்...'
-              : 'Type or speak your question...'
+              ? t('global_ai.placeholder_listening')
+              : i18n.language === 'ta'
+              ? t('global_ai.placeholder_ta')
+              : t('global_ai.placeholder_en')
           }
           className="flex-1 px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 focus:border-amber-500 focus:outline-none text-xs sm:text-sm text-slate-100 placeholder-slate-500"
         />

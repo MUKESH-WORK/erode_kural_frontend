@@ -414,6 +414,35 @@ body,
   color: var(--color-text-primary);
 }
 
+/* Ensure filter select dropdowns and options remain BLACK in all states */
+select,
+select option,
+select.btn-ghost,
+select.btn-ghost option,
+.filter-select,
+.filter-select option {
+  color: #000000 !important;
+  background-color: #ffffff;
+}
+
+select:hover,
+select:focus,
+select:active,
+select option:hover,
+select option:focus,
+select option:active,
+select option:checked,
+select.btn-ghost:hover,
+select.btn-ghost:focus,
+select.btn-ghost:active,
+select.btn-ghost option:hover,
+select.btn-ghost option:focus,
+select.btn-ghost option:active,
+select.btn-ghost option:checked {
+  color: #000000 !important;
+  background-color: #ffffff;
+}
+
 .btn-sm {
   padding: 4px 12px;
   font-size: 0.75rem;
@@ -698,6 +727,8 @@ body,
   font-size: 0.9rem;
   text-decoration: none;
   position: relative;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .nav-item:hover {
@@ -705,10 +736,18 @@ body,
   color: rgba(255, 255, 255, 0.9);
 }
 
+.nav-item:active {
+  background: rgba(255, 255, 255, 0.14);
+}
+
 .nav-item.active {
   background: rgba(200, 169, 81, 0.15);
   color: var(--color-tn-accent);
   font-weight: 600;
+}
+
+.nav-item.active:active {
+  background: rgba(200, 169, 81, 0.25);
 }
 
 .nav-item.active::before {
