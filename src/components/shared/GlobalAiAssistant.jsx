@@ -45,14 +45,39 @@ export default function GlobalAiAssistant() {
 
   const { setActiveTab } = useAppStore();
   const messagesEndRef = useRef(null);
+  const globalFeedRef = useRef(null);
   const inputRef = useRef(null);
+
+  const scrollToGlobalBottom = (smooth = true) => {
+    const doScroll = () => {
+      if (globalFeedRef.current) {
+        globalFeedRef.current.scrollTop = globalFeedRef.current.scrollHeight;
+      }
+      messagesEndRef.current?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'end' });
+    };
+    doScroll();
+    requestAnimationFrame(doScroll);
+    setTimeout(doScroll, 50);
+    setTimeout(doScroll, 150);
+    setTimeout(doScroll, 300);
+  };
 
   // Auto-scroll to bottom of chat
   useEffect(() => {
     if (isOpen) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      scrollToGlobalBottom(true);
     }
   }, [messages, isOpen, isLoading]);
+
+  useEffect(() => {
+    const container = globalFeedRef.current;
+    if (!container) return;
+    const observer = new ResizeObserver(() => {
+      if (isOpen) scrollToGlobalBottom(true);
+    });
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [isOpen]);
 
   // Focus input when opened
   useEffect(() => {
@@ -218,7 +243,7 @@ export default function GlobalAiAssistant() {
       )}
 
       {/* ─── Messages Scroll Area ────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3.5 text-sm scrollbar-thin scrollbar-thumb-slate-700">
+      <div ref={globalFeedRef} className="flex-1 overflow-y-auto p-4 space-y-3.5 text-sm scrollbar-thin scrollbar-thumb-slate-700">
         {messages.map((msg) => {
           const isAsst = msg.sender === 'assistant';
           return (

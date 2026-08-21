@@ -23,6 +23,8 @@ import {
   Plus,
   Sparkles,
   ChevronRight,
+  RotateCcw,
+  Share2,
 } from 'lucide-react';
 
 const DOC_SUGGESTION_KEYS = [
@@ -46,12 +48,45 @@ export default function GeneralModule() {
   const [isListening, setIsListening] = useState(false);
 
   const scrollRef = useRef(null);
+  const chatContainerRef = useRef(null);
   const textareaRef = useRef(null);
   const fileInputRef = useRef(null);
 
+  const scrollToBottom = (smooth = true) => {
+    const doScroll = () => {
+      const container = chatContainerRef.current;
+      if (container) {
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: smooth ? 'smooth' : 'auto',
+        });
+      }
+    };
+    doScroll();
+    requestAnimationFrame(doScroll);
+    setTimeout(doScroll, 40);
+    setTimeout(doScroll, 120);
+    setTimeout(doScroll, 250);
+  };
+
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+    scrollToBottom(true);
   }, [messages, loading]);
+
+  useEffect(() => {
+    const container = chatContainerRef.current;
+    if (!container) return;
+    const observer = new ResizeObserver(() => {
+      if (container) {
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: 'smooth',
+        });
+      }
+    });
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
 
   const handleFileChange = async (e) => {
     const uploadedFile = e.target.files?.[0];
@@ -121,6 +156,17 @@ export default function GeneralModule() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  // Share Message
+  const handleShare = (text) => {
+    if (!text) return;
+    if (navigator.share) {
+      navigator.share({ title: 'AI Assistant Response', text }).catch(() => { });
+    } else {
+      navigator.clipboard.writeText(text);
+      alert('Copied to clipboard!');
+    }
+  };
+
   // Clear Conversation
   const handleClear = () => {
     if (window.confirm(t('general.confirm_clear'))) {
@@ -150,13 +196,13 @@ export default function GeneralModule() {
     const rawText = textToSend || input;
     if ((!rawText.trim() && !file) || loading) return;
 
-    const messageText = file 
+    const messageText = file
       ? `[${t('common.attachment')}: ${file.name}] ${rawText.trim() || t('general.doc_received')}`
       : rawText.trim();
 
     const currentLocale = i18n.language === 'ta' ? 'ta-IN' : 'en-IN';
     const userMsg = {
-      id: `usr_${Date.now()}`,
+      id: `usr_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       sender: 'user',
       text: messageText,
       timestamp: new Date().toLocaleTimeString(currentLocale, { hour: '2-digit', minute: '2-digit' }),
@@ -164,14 +210,18 @@ export default function GeneralModule() {
 
     setMessages((prev) => [...prev, userMsg]);
     if (!textToSend) setInput('');
+    if (textareaRef.current) {
+      textareaRef.current.style.height = '38px';
+    }
     setFile(null);
     setLoading(true);
+    scrollToBottom(true);
 
     try {
       const res = await sendChat(messageText, officerId);
       const aiContent = res.blocks?.[0]?.content || 'Completed.';
       const aiMsg = {
-        id: res.message_id || `ai_${Date.now()}`,
+        id: res.message_id ? `${res.message_id}_${Math.random().toString(36).substring(2, 7)}` : `ai_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
         sender: 'ai',
         text: aiContent,
         timestamp: new Date().toLocaleTimeString(currentLocale, { hour: '2-digit', minute: '2-digit' }),
@@ -179,7 +229,7 @@ export default function GeneralModule() {
       setMessages((prev) => [...prev, aiMsg]);
     } catch (err) {
       const errorMsg = {
-        id: `err_${Date.now()}`,
+        id: `err_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
         sender: 'ai',
         text: `${t('common.error')}: ${err.message || t('general.server_error')}`,
         timestamp: new Date().toLocaleTimeString(currentLocale, { hour: '2-digit', minute: '2-digit' }),
@@ -188,6 +238,7 @@ export default function GeneralModule() {
       setMessages((prev) => [...prev, errorMsg]);
     } finally {
       setLoading(false);
+      scrollToBottom(true);
     }
   };
 
@@ -202,6 +253,7 @@ export default function GeneralModule() {
     <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 110px)', gap: 12, overflow: 'hidden' }}>
       {/* Main Center Container */}
       <div
+        ref={chatContainerRef}
         className="card"
         style={{
           flex: 1,
@@ -242,7 +294,7 @@ export default function GeneralModule() {
           <div
             style={{
               display: 'flex',
-              justifyContent: 'flex-end',
+              justify: 'flex-end',
               gap: 8,
               paddingBottom: 6,
               borderBottom: '1px solid var(--color-surface-border)',
@@ -398,6 +450,8 @@ export default function GeneralModule() {
                         fontSize: '0.9rem',
                         lineHeight: 1.65,
                         whiteSpace: 'pre-wrap',
+                        wordBreak: 'break-word',
+                        overflowWrap: 'break-word',
                         boxShadow: isUser
                           ? '0 4px 12px rgba(26, 58, 92, 0.2)'
                           : '0 2px 8px rgba(0,0,0,0.03)',
@@ -656,10 +710,22 @@ export default function GeneralModule() {
 
         <textarea
           ref={textareaRef}
-          rows={2}
+          rows={1}
           value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
+          onChange={(e) => {
+            setInput(e.target.value);
+            e.target.style.height = 'auto';
+            e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              handleSend();
+              if (textareaRef.current) {
+                textareaRef.current.style.height = '38px';
+              }
+            }
+          }}
           placeholder={t('general.placeholder')}
           className="chat-input tamil-text"
           style={{
@@ -671,7 +737,14 @@ export default function GeneralModule() {
             color: 'var(--color-text-primary)',
             resize: 'none',
             fontFamily: "'Noto Sans Tamil', 'Inter', sans-serif",
-            lineHeight: 1.6,
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word',
+            overflowWrap: 'break-word',
+            overflowY: 'auto',
+            height: '38px',
+            maxHeight: '120px',
+            lineHeight: 1.5,
+            padding: '4px 0',
           }}
         />
 

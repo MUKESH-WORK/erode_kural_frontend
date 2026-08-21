@@ -14,7 +14,6 @@ import {
   Upload,
   UploadCloud,
   Table,
-  Sparkles,
   AlertTriangle,
   FileSpreadsheet,
   RefreshCw,
@@ -29,6 +28,9 @@ import {
   Check,
   Share2,
   RotateCcw,
+  Bot,
+  Plus,
+  Paperclip,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -102,6 +104,16 @@ export default function DataModule() {
     setTimeout(() => setCopiedMessageId(null), 2000);
   };
 
+  const handleShareMessage = (text) => {
+    if (!text) return;
+    if (navigator.share) {
+      navigator.share({ title: 'AI Data Insight', text }).catch(() => { });
+    } else {
+      navigator.clipboard.writeText(text);
+      alert('Insight copied to clipboard!');
+    }
+  };
+
   const handleClearChat = () => {
     const defaultMsgs = [
       {
@@ -117,11 +129,36 @@ export default function DataModule() {
 
   const chatEndRef = useRef(null);
   const chatInputRef = useRef(null);
+  const chatFeedContainerRef = useRef(null);
+
+  const scrollDataChatToBottom = (smooth = true) => {
+    const doScroll = () => {
+      if (chatFeedContainerRef.current) {
+        chatFeedContainerRef.current.scrollTop = chatFeedContainerRef.current.scrollHeight;
+      }
+      chatEndRef.current?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'end' });
+    };
+    doScroll();
+    requestAnimationFrame(doScroll);
+    setTimeout(doScroll, 50);
+    setTimeout(doScroll, 150);
+    setTimeout(doScroll, 300);
+  };
 
   // Scroll chat to bottom on new messages
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    scrollDataChatToBottom(true);
   }, [chatMessages, chatLoading]);
+
+  useEffect(() => {
+    const container = chatFeedContainerRef.current;
+    if (!container) return;
+    const observer = new ResizeObserver(() => {
+      scrollDataChatToBottom(true);
+    });
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
 
   // Close download menu on click outside
   useEffect(() => {
@@ -296,7 +333,12 @@ export default function DataModule() {
     setChatMessages(updatedUserMsgs);
     setDataSession({ chatMessages: updatedUserMsgs });
 
-    if (!customText) setChatInput('');
+    if (!customText) {
+      setChatInput('');
+      if (chatInputRef.current) {
+        chatInputRef.current.style.height = '32px';
+      }
+    }
     setChatLoading(true);
 
     try {
@@ -622,22 +664,30 @@ export default function DataModule() {
 
 
   return (
-    <div className="animate-fade-in" style={{ maxWidth: 1600, margin: '0 auto', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', gap: 14, overflow: 'hidden', minHeight: 0 }}>
+    <div
+      className="animate-fade-in"
+      style={{
+        maxWidth: 1600,
+        margin: '0 auto',
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 16,
+        overflow: 'hidden',
+        minHeight: 0,
+        boxSizing: 'border-box',
+      }}
+    >
       {/* Module Title Header */}
       <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h1 className="module-title tamil-text" style={{ fontSize: '1.4rem', fontWeight: 700 }}>
+          <h1 className="module-title tamil-text" style={{ fontSize: '1.4rem', fontWeight: 700, margin: 0 }}>
             {t('data.title')}
           </h1>
-          <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }} className="tamil-text">
+          <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', margin: '4px 0 0 0' }} className="tamil-text">
             {t('data.subtitle')}
           </p>
-        </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <button className="btn btn-ghost btn-sm" onClick={loadDatasetsList} disabled={loading} title={t('common.retry')}>
-            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-            <span style={{ fontSize: '0.8rem' }}>{t('common.retry')}</span>
-          </button>
         </div>
       </div>
 
@@ -659,7 +709,7 @@ export default function DataModule() {
           flex: 1,
           minHeight: 0,
           display: 'grid',
-          gridTemplateColumns: 'minmax(0, 1.85fr) minmax(340px, 1fr)',
+          gridTemplateColumns: 'minmax(0, 1.4fr) minmax(400px, 1fr)',
           gap: 20,
           alignItems: 'stretch',
           overflow: 'hidden',
@@ -994,7 +1044,7 @@ export default function DataModule() {
                       transition: 'all 0.2s ease',
                     }}
                   >
-                    <Sparkles size={13} />
+                    <Bot size={13} />
                     <span>Ask AI About This Chart</span>
                   </button>
                 </div>
@@ -1116,17 +1166,17 @@ export default function DataModule() {
           style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: 12,
+            gap: 14,
             height: '100%',
             minHeight: 0,
             overflow: 'hidden',
-            padding: 16,
+            padding: 20,
             background: 'var(--color-surface-card)',
             backdropFilter: 'blur(16px)',
             WebkitBackdropFilter: 'blur(16px)',
             borderRadius: 24,
             border: '1px solid rgba(16, 185, 129, 0.25)',
-            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.6)',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.05), inset 1px 0 rgba(255, 255, 255, 0.6)',
             boxSizing: 'border-box',
           }}
         >
@@ -1136,16 +1186,16 @@ export default function DataModule() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              paddingBottom: 12,
+              paddingBottom: 14,
               borderBottom: '1px solid var(--color-surface-border)',
               flexShrink: 0,
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div
                 style={{
-                  width: 36,
-                  height: 36,
+                  width: 40,
+                  height: 40,
                   borderRadius: '50%',
                   background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.1) 100%)',
                   border: '1px solid rgba(16, 185, 129, 0.3)',
@@ -1155,44 +1205,47 @@ export default function DataModule() {
                   color: '#10b981',
                 }}
               >
-                <Sparkles size={18} />
+                <Bot size={20} />
               </div>
               <div>
-                <div style={{ fontSize: '0.98rem', fontWeight: 700, color: 'var(--color-text-primary)' }} className="tamil-text">
+                <div style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--color-text-primary)' }} className="tamil-text">
                   AI Data Assistant
                 </div>
-                <div style={{ fontSize: '0.73rem', color: 'var(--color-text-secondary)', marginTop: 1 }}>
+                <div style={{ fontSize: '0.78rem', color: 'var(--color-text-secondary)', marginTop: 2 }}>
                   Ask questions in Tamil or English
                 </div>
               </div>
             </div>
 
-            {/* Translucent Retry / Clear Pill Badge */}
+            {/* UPPER RIGHT SIDE: NEW CHAT BUTTON */}
             <button
               onClick={handleClearChat}
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 5,
-                padding: '4px 10px',
+                gap: 6,
+                padding: '6px 14px',
                 borderRadius: 9999,
                 background: 'rgba(16, 185, 129, 0.08)',
                 border: '1px solid rgba(16, 185, 129, 0.25)',
                 color: '#10b981',
-                fontSize: '0.72rem',
+                fontSize: '0.78rem',
                 fontWeight: 600,
                 cursor: 'pointer',
-                transition: 'all 0.2s ease',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                boxShadow: '0 2px 8px rgba(16, 185, 129, 0.05)',
               }}
-              title="Reset conversation"
+              className="hover:bg-emerald-500/20 hover:border-emerald-500/40 tamil-text"
+              title="Start a new chat session"
             >
-              <RotateCcw size={12} />
-              <span>மீண்டும் தொடங்க</span>
+              <Plus size={14} />
+              <span>New Chat</span>
             </button>
           </div>
 
-          {/* Messages Stream */}
+          {/* Messages Stream (Independent Scrollable Container) */}
           <div
+            ref={chatFeedContainerRef}
             style={{
               flex: 1,
               minHeight: 0,
@@ -1204,32 +1257,17 @@ export default function DataModule() {
               paddingTop: 4,
             }}
           >
-            {!selectedDatasetId && (
-              <div
-                style={{
-                  fontSize: '0.82rem',
-                  color: 'var(--color-text-muted)',
-                  textAlign: 'center',
-                  padding: '24px 16px',
-                  borderRadius: 16,
-                  background: 'rgba(16, 185, 129, 0.04)',
-                  border: '1px dashed rgba(16, 185, 129, 0.2)',
-                  marginTop: 10,
-                }}
-              >
-                Upload a dataset and I will analyze the metrics and answer your queries in real-time.
-              </div>
-            )}
-
             {chatMessages.map((msg) => (
               <div
                 key={msg.id}
                 style={{
                   alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start',
-                  maxWidth: '90%',
+                  maxWidth: '88%',
+                  width: 'fit-content',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: 4,
+                  boxSizing: 'border-box',
                 }}
               >
                 <div
@@ -1248,9 +1286,20 @@ export default function DataModule() {
                         : '0 4px 16px rgba(0, 0, 0, 0.04)',
                     border: msg.sender === 'user' ? 'none' : '1px solid rgba(16, 185, 129, 0.15)',
                     backdropFilter: msg.sender === 'ai' ? 'blur(8px)' : 'none',
+                    boxSizing: 'border-box',
+                    overflowWrap: 'anywhere',
+                    wordBreak: 'break-word',
                   }}
                 >
-                  <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.6 }} className="tamil-text">
+                  <div
+                    style={{
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-word',
+                      overflowWrap: 'anywhere',
+                      lineHeight: 1.6,
+                    }}
+                    className="tamil-text"
+                  >
                     {msg.text}
                   </div>
 
@@ -1264,6 +1313,7 @@ export default function DataModule() {
                       gap: 8,
                       borderTop: msg.sender === 'ai' ? '1px solid rgba(16, 185, 129, 0.1)' : 'none',
                       paddingTop: msg.sender === 'ai' ? 6 : 0,
+                      flexWrap: 'wrap',
                     }}
                   >
                     <span style={{ fontSize: '0.65rem', opacity: msg.sender === 'user' ? 0.8 : 0.65 }}>
@@ -1290,6 +1340,25 @@ export default function DataModule() {
                         >
                           {copiedMessageId === msg.id ? <Check size={11} /> : <Copy size={11} />}
                           <span>{copiedMessageId === msg.id ? 'Copied' : 'Copy'}</span>
+                        </button>
+                        <button
+                          onClick={() => handleShareMessage(msg.text)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 3,
+                            padding: '2px 8px',
+                            borderRadius: 9999,
+                            background: 'rgba(16, 185, 129, 0.08)',
+                            border: '1px solid rgba(16, 185, 129, 0.2)',
+                            color: '#10b981',
+                            fontSize: '0.68rem',
+                            cursor: 'pointer',
+                          }}
+                          title="Share insight"
+                        >
+                          <Share2 size={11} />
+                          <span>Share</span>
                         </button>
                       </div>
                     )}
@@ -1320,7 +1389,7 @@ export default function DataModule() {
             <div ref={chatEndRef} />
           </div>
 
-          {/* RECOMMENDED PROMPTS (ROUNDED PILL CHIPS ABOVE CHAT INPUT) */}
+          {/* FIXED BOTTOM ACTION FOOTER (STATIONARY PROMPTS + INPUT) */}
           <div
             style={{
               flexShrink: 0,
@@ -1331,128 +1400,149 @@ export default function DataModule() {
               borderTop: '1px solid var(--color-surface-border)',
             }}
           >
-            <div style={{ fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.04em', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>
-              Recommended Prompts
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {RECOMMENDED_PROMPTS.map((prompt) => (
-                <button
-                  key={prompt.id}
-                  onClick={() => handleSendChatMessage(prompt.query)}
-                  style={{
-                    fontSize: '0.78rem',
-                    fontWeight: 600,
-                    padding: '8px 14px',
-                    borderRadius: 9999,
-                    border: '1px solid rgba(16, 185, 129, 0.25)',
-                    background: 'var(--color-surface-hover)',
-                    backdropFilter: 'blur(8px)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                    color: 'var(--color-text-primary)',
-                    textAlign: 'left',
-                    width: '100%',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.02)',
-                  }}
-                  className="hover:border-emerald-500 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/30"
-                  title={prompt.query}
-                >
-                  <span style={{ fontSize: '0.9rem' }}>{prompt.icon}</span>
-                  <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{prompt.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
+            {/* RECOMMENDED PROMPTS (ONLY SHOWN FIRST TIME BEFORE TEXTING/MESSAGING STARTS) */}
+            {!chatMessages.some((msg) => msg.sender === 'user') && !chatInput.trim() && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <div style={{ fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.04em', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>
+                  Recommended Prompts
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {RECOMMENDED_PROMPTS.map((prompt) => (
+                    <button
+                      key={prompt.id}
+                      onClick={() => handleSendChatMessage(prompt.query)}
+                      style={{
+                        fontSize: '0.78rem',
+                        fontWeight: 600,
+                        padding: '8px 14px',
+                        borderRadius: 9999,
+                        border: '1px solid rgba(16, 185, 129, 0.25)',
+                        background: 'var(--color-surface-hover)',
+                        backdropFilter: 'blur(8px)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        color: 'var(--color-text-primary)',
+                        textAlign: 'left',
+                        width: '100%',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.02)',
+                      }}
+                      className="hover:border-emerald-500 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/30"
+                      title={prompt.query}
+                    >
+                      <span style={{ fontSize: '0.9rem' }}>{prompt.icon}</span>
+                      <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{prompt.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
-          {/* FLOATING ROUNDED PILL INPUT DOCK & VOICE CONTROLS */}
-          <div
-            style={{
-              flexShrink: 0,
-              marginTop: 4,
-              padding: '6px 8px 6px 16px',
-              borderRadius: 9999,
-              background: 'var(--color-surface-input)',
-              backdropFilter: 'blur(12px)',
-              border: '1.5px solid rgba(16, 185, 129, 0.35)',
-              boxShadow: '0 8px 24px rgba(16, 185, 129, 0.1)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-            }}
-          >
-            <input
-              ref={chatInputRef}
-              type="text"
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleSendChatMessage();
-                }
-              }}
-              placeholder="தரவு பற்றி கேளுங்கள்... / Ask about your data..."
-              className="chat-input tamil-text"
+            {/* FLOATING ROUNDED PILL INPUT DOCK & VOICE CONTROLS */}
+            <div
               style={{
-                flex: 1,
-                background: 'transparent',
-                border: 'none',
-                outline: 'none',
-                fontSize: '0.84rem',
-                color: 'var(--color-text-primary)',
-                fontFamily: "'Noto Sans Tamil', 'Inter', sans-serif",
-                padding: '4px 0',
-              }}
-            />
-
-            {/* Circular Voice Input Button */}
-            <button
-              onClick={toggleListening}
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: isListening ? '1.5px solid #ef4444' : '1px solid rgba(16, 185, 129, 0.3)',
-                background: isListening ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.1)',
-                color: isListening ? '#ef4444' : '#10b981',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
                 flexShrink: 0,
-              }}
-              title={isListening ? 'Stop Listening' : t('common.voice_input')}
-            >
-              {isListening ? <MicOff size={16} className="animate-pulse" /> : <Mic size={16} />}
-            </button>
-
-            {/* Circular Send Button */}
-            <button
-              onClick={() => handleSendChatMessage()}
-              disabled={!chatInput.trim() || chatLoading}
-              style={{
-                width: 38,
-                height: 38,
-                borderRadius: '50%',
-                background: !chatInput.trim() || chatLoading ? 'var(--color-surface-hover)' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                color: !chatInput.trim() || chatLoading ? 'var(--color-text-muted)' : '#ffffff',
-                border: 'none',
-                cursor: !chatInput.trim() || chatLoading ? 'not-allowed' : 'pointer',
+                marginTop: 2,
+                padding: '6px 8px 6px 14px',
+                borderRadius: chatInput.length > 45 || chatInput.indexOf('\n') !== -1 ? 18 : 9999,
+                background: 'var(--color-surface-input)',
+                backdropFilter: 'blur(12px)',
+                border: '1.5px solid rgba(16, 185, 129, 0.35)',
+                boxShadow: '0 8px 24px rgba(16, 185, 129, 0.1)',
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: !chatInput.trim() || chatLoading ? 'none' : '0 4px 12px rgba(16, 185, 129, 0.4)',
-                transition: 'all 0.2s ease',
-                flexShrink: 0,
+                alignItems: 'flex-end',
+                gap: 8,
+                transition: 'border-radius 0.2s ease',
               }}
-              title="Send message"
             >
-              <Send size={15} style={{ marginLeft: 2 }} />
-            </button>
+              <textarea
+                ref={chatInputRef}
+                rows={1}
+                value={chatInput}
+                onChange={(e) => {
+                  setChatInput(e.target.value);
+                  e.target.style.height = 'auto';
+                  e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendChatMessage();
+                    if (chatInputRef.current) {
+                      chatInputRef.current.style.height = '32px';
+                    }
+                  }
+                }}
+                placeholder="தரவு பற்றி கேளுங்கள்... / Ask about your data..."
+                className="chat-input tamil-text"
+                style={{
+                  flex: 1,
+                  background: 'transparent',
+                  border: 'none',
+                  outline: 'none',
+                  fontSize: '0.84rem',
+                  color: 'var(--color-text-primary)',
+                  fontFamily: "'Noto Sans Tamil', 'Inter', sans-serif",
+                  resize: 'none',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
+                  overflowY: 'auto',
+                  height: '32px',
+                  maxHeight: '120px',
+                  lineHeight: 1.45,
+                  padding: '6px 0',
+                }}
+              />
+
+              {/* Circular Voice Input Button */}
+              <button
+                onClick={toggleListening}
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: isListening ? '1.5px solid #ef4444' : '1px solid rgba(16, 185, 129, 0.3)',
+                  background: isListening ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.1)',
+                  color: isListening ? '#ef4444' : '#10b981',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  flexShrink: 0,
+                }}
+                title={isListening ? 'Stop Listening' : t('common.voice_input')}
+              >
+                {isListening ? <MicOff size={16} className="animate-pulse" /> : <Mic size={16} />}
+              </button>
+
+              {/* Circular Send Button */}
+              <button
+                onClick={() => handleSendChatMessage()}
+                disabled={!chatInput.trim() || chatLoading}
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: '50%',
+                  background: !chatInput.trim() || chatLoading ? 'var(--color-surface-hover)' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  color: !chatInput.trim() || chatLoading ? 'var(--color-text-muted)' : '#ffffff',
+                  border: 'none',
+                  cursor: !chatInput.trim() || chatLoading ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: !chatInput.trim() || chatLoading ? 'none' : '0 4px 12px rgba(16, 185, 129, 0.4)',
+                  transition: 'all 0.2s ease',
+                  flexShrink: 0,
+                }}
+                title="Send message"
+              >
+                <Send size={15} style={{ marginLeft: 2 }} />
+              </button>
+            </div>
           </div>
         </div>
       </div>
