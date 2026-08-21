@@ -54,30 +54,20 @@ export default function Sidebar() {
       >
         <TnEmblem size={sidebarCollapsed ? 28 : 32} className="text-[#c8a951] flex-shrink-0" />
         {!sidebarCollapsed && (
-          <div style={{ overflow: 'hidden', minWidth: 0 }}>
+          <div style={{ overflow: 'hidden', minWidth: 0, flex: 1 }}>
             <div
               className="tamil-text"
               style={{
-                fontSize: '0.78rem',
+                fontSize: '0.76rem',
                 fontWeight: 700,
                 color: '#FFFFFF',
-                whiteSpace: 'normal',
+                whiteSpace: 'pre-line',
                 lineHeight: 1.25,
               }}
             >
-              {t('app_title')}
-            </div>
-            <div
-              style={{
-                fontSize: '0.65rem',
-                color: 'rgba(255,255,255,0.6)',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                lineHeight: 1.2,
-              }}
-            >
-              {t('app_subtitle')}
+              {t('app_title')
+                .replace('Collectorate Office', 'Collectorate\nOffice')
+                .replace('ஆட்சியர் அலுவலகம்', 'ஆட்சியர்\nஅலுவலகம்')}
             </div>
           </div>
         )}

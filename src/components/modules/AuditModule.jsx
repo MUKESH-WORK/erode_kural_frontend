@@ -163,8 +163,14 @@ export default function AuditModule() {
             {t('audit.desc')}
           </p>
         </div>
-        <button className="btn btn-ghost btn-sm" onClick={loadAudit} disabled={loading} title="Refresh Audit Log">
-          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+        <button
+          className="btn btn-ghost btn-sm"
+          onClick={loadAudit}
+          disabled={loading}
+          title="Refresh Audit Log"
+          style={{ color: 'var(--color-text-primary)' }}
+        >
+          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} style={{ color: 'var(--color-text-primary)' }} />
         </button>
       </div>
 
@@ -359,16 +365,16 @@ export default function AuditModule() {
           <div className="empty-title tamil-text">{t('audit.empty')}</div>
         </div>
       ) : (
-        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-          <table className="data-table">
+        <div className="card" style={{ padding: 0, maxHeight: 'calc(100vh - 280px)', overflowY: 'auto', borderRadius: 12, border: '1px solid var(--color-surface-border)' }}>
+          <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr>
-                <th className="tamil-text">{t('audit.date_time')}</th>
-                <th className="tamil-text">{t('audit.category')}</th>
-                <th className="tamil-text">{t('audit.action')}</th>
-                <th className="tamil-text">{t('audit.officer')}</th>
-                <th className="tamil-text">{t('audit.source_id')}</th>
-                <th className="tamil-text">{t('audit.details')}</th>
+                <th className="tamil-text" style={{ position: 'sticky', top: 0, background: 'var(--color-surface-hover)', zIndex: 5, boxShadow: '0 1px 0 var(--color-surface-border)', whiteSpace: 'nowrap' }}>{t('audit.date_time')}</th>
+                <th className="tamil-text" style={{ position: 'sticky', top: 0, background: 'var(--color-surface-hover)', zIndex: 5, boxShadow: '0 1px 0 var(--color-surface-border)', whiteSpace: 'nowrap' }}>{t('audit.category')}</th>
+                <th className="tamil-text" style={{ position: 'sticky', top: 0, background: 'var(--color-surface-hover)', zIndex: 5, boxShadow: '0 1px 0 var(--color-surface-border)', whiteSpace: 'nowrap' }}>{t('audit.action')}</th>
+                <th className="tamil-text" style={{ position: 'sticky', top: 0, background: 'var(--color-surface-hover)', zIndex: 5, boxShadow: '0 1px 0 var(--color-surface-border)', whiteSpace: 'nowrap' }}>{t('audit.officer')}</th>
+                <th className="tamil-text" style={{ position: 'sticky', top: 0, background: 'var(--color-surface-hover)', zIndex: 5, boxShadow: '0 1px 0 var(--color-surface-border)', whiteSpace: 'nowrap' }}>{t('audit.source_id')}</th>
+                <th className="tamil-text" style={{ position: 'sticky', top: 0, background: 'var(--color-surface-hover)', zIndex: 5, boxShadow: '0 1px 0 var(--color-surface-border)' }}>{t('audit.details')}</th>
               </tr>
             </thead>
             <tbody>
@@ -420,7 +426,7 @@ export default function AuditModule() {
                     <td style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
                       {ent.source_id ? `${ent.source_id.slice(0, 12)}${ent.source_id.length > 12 ? '…' : ''}` : '—'}
                     </td>
-                    <td className="tamil-text" style={{ fontSize: '0.83rem', color: 'var(--color-text-secondary)' }}>
+                    <td className="tamil-text" style={{ fontSize: '0.83rem', color: 'var(--color-text-secondary)', whiteSpace: 'normal', wordBreak: 'break-word', lineHeight: 1.4 }}>
                       {ent.details}
                     </td>
                   </tr>
