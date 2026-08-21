@@ -39,6 +39,30 @@ const useAppStore = create((set, get) => ({
   appConfig: null,
   setAppConfig: (config) => set({ appConfig: config }),
 
+  // ─── Data & Visualization Session State (In-Memory Session Only) ───
+  dataSession: {
+    datasetId: null,
+    datasetSchema: null,
+    graphType: 'bar',
+    chatMessages: null,
+  },
+  setDataSession: (sessionData) =>
+    set((s) => ({
+      dataSession: {
+        ...s.dataSession,
+        ...sessionData,
+      },
+    })),
+  clearDataSession: () =>
+    set({
+      dataSession: {
+        datasetId: null,
+        datasetSchema: null,
+        graphType: 'bar',
+        chatMessages: null,
+      },
+    }),
+
   // ─── Loading / Error states ───────────
   isLoading: false,
   setIsLoading: (v) => set({ isLoading: v }),
