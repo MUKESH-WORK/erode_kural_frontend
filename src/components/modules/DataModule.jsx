@@ -1,50 +1,34 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import html2canvas from 'html2canvas';
 import useAppStore from '../../stores/appStore';
 import {
   fetchDatasets,
   fetchDatasetSchema,
   uploadDataset,
   queryDataset,
-  detectOutliers,
-  createCustomChart,
   deleteDatasetApi,
 } from '../../lib/api';
-import ConfidenceBadge from '../shared/ConfidenceBadge';
 import {
   BarChart3,
   Upload,
   UploadCloud,
-  Search,
-  Database,
   Table,
   Sparkles,
   AlertTriangle,
-  Code2,
   FileSpreadsheet,
   RefreshCw,
   Trash2,
-  ChevronRight,
-  TrendingUp,
   Download,
-  Eye,
-  CheckCircle2,
-  Paperclip,
   Mic,
   MicOff,
   Send,
   X,
-  Maximize2,
-  Minimize2,
-  Filter,
-  Info,
+  ChevronDown,
+  Copy,
   Check,
-  FileText,
-  PieChart as PieIcon,
-  LineChart as LineIcon,
-  Activity,
-  Lightbulb,
-  MessageSquare,
+  Share2,
+  RotateCcw,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -62,53 +46,74 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-  Legend,
   CartesianGrid,
 } from 'recharts';
 
 const CHART_COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#14b8a6', '#f97316'];
 
 const RECOMMENDED_PROMPTS = [
-  { id: 'summary', labelKey: 'data.prompt_summary', queryKey: 'data.prompt_summary_query' },
-  { id: 'trends', labelKey: 'data.prompt_trends', queryKey: 'data.prompt_trends_query' },
-  { id: 'insights', labelKey: 'data.prompt_insights', queryKey: 'data.prompt_insights_query' },
-  { id: 'anomalies', labelKey: 'data.prompt_anomalies', queryKey: 'data.prompt_anomalies_query' },
+  { id: 'summary', icon: '📊', label: 'Summarize this data', query: 'Summarize this dataset and provide key overview metrics.' },
+  { id: 'trends', icon: '📈', label: 'Explain the major trends', query: 'Explain the major trends and patterns observed in this dataset.' },
+  { id: 'anomalies', icon: '🔍', label: 'Find unusual values', query: 'Identify any potential anomalies, outliers, or unusual data points.' },
 ];
 
 export default function DataModule() {
   const { t } = useTranslation();
-  const { officerId } = useAppStore();
+  const { officerId, dataSession, setDataSession, clearDataSession } = useAppStore();
 
   // Data & Datasets state
   const [datasets, setDatasets] = useState([]);
-  const [selectedDatasetId, setSelectedDatasetId] = useState(null);
-  const [datasetSchema, setDatasetSchema] = useState(null);
+  const [selectedDatasetId, setSelectedDatasetId] = useState(dataSession?.datasetId || null);
+  const [datasetSchema, setDatasetSchema] = useState(dataSession?.datasetSchema || null);
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // Analysis Loading Step
-  const [analyzingStep, setAnalyzingStep] = useState(null); // 'analyzing' | 'visualizing' | 'insights' | null
+  const [analyzingStep, setAnalyzingStep] = useState(null);
 
-  // Chart Toolbar State
-  const [selectedFilterCol, setSelectedFilterCol] = useState('ALL');
-  const [selectedXCol, setSelectedXCol] = useState('');
-  const [selectedYCol, setSelectedYCol] = useState('');
-  const [selectedChart, setSelectedChart] = useState(null); // Selected chart for AI context
-  const [fullscreenChart, setFullscreenChart] = useState(null); // Fullscreen modal chart
+  // Single Graph Control State (Default: Bar Chart or Session Chart)
+  const [graphType, setGraphType] = useState(dataSession?.graphType || 'bar');
+  const [downloadOpen, setDownloadOpen] = useState(false);
+  const chartRef = useRef(null);
+  const graphCardRef = useRef(null);
+  const exportContainerRef = useRef(null);
 
   // Unified AI Assistant Chat State
-  const [chatMessages, setChatMessages] = useState([
-    {
-      id: 'welcome-1',
-      sender: 'ai',
-      text: 'வணக்கம்! பதிவேற்றப்பட்ட தரவுத்தொகுப்பிலிருந்து கேள்விகளை கேட்கலாம். வரைபடத்தை தேர்ந்தெடுத்து "Ask AI About This Chart" கிளிக் செய்யலாம்.',
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    },
-  ]);
+  const [chatMessages, setChatMessages] = useState(
+    dataSession?.chatMessages || [
+      {
+        id: 'welcome-1',
+        sender: 'ai',
+        text: 'வணக்கம்! பதிவேற்றப்பட்ட தரவுத்தொகுப்பிலிருந்து கேள்விகளை கேட்கலாம். வரைபடத்தை குறித்து உரையாட "Ask AI About This Chart" கிளிக் செய்யலாம்.',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      },
+    ]
+  );
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [copiedMessageId, setCopiedMessageId] = useState(null);
+
+  const handleCopyMessage = (text, id) => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    setCopiedMessageId(id);
+    setTimeout(() => setCopiedMessageId(null), 2000);
+  };
+
+  const handleClearChat = () => {
+    const defaultMsgs = [
+      {
+        id: `welcome-${Date.now()}`,
+        sender: 'ai',
+        text: 'வணக்கம்! பதிவேற்றப்பட்ட தரவுத்தொகுப்பிலிருந்து கேள்விகளை கேட்கலாம். வரைபடத்தை குறித்து உரையாட "Ask AI About This Chart" கிளிக் செய்யலாம்.',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      },
+    ];
+    setChatMessages(defaultMsgs);
+    setDataSession({ chatMessages: defaultMsgs });
+  };
 
   const chatEndRef = useRef(null);
   const chatInputRef = useRef(null);
@@ -118,10 +123,16 @@ export default function DataModule() {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages, chatLoading]);
 
-  // Load datasets list on mount
+  // Close download menu on click outside
   useEffect(() => {
-    loadDatasetsList();
-  }, []);
+    const handleClickOutside = (event) => {
+      if (downloadOpen && !event.target.closest('.download-dropdown-container')) {
+        setDownloadOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [downloadOpen]);
 
   const loadDatasetsList = async () => {
     setLoading(true);
@@ -137,9 +148,15 @@ export default function DataModule() {
     }
   };
 
+  // Load datasets list on mount
+  useEffect(() => {
+    loadDatasetsList();
+  }, []);
+
+
   const selectDataset = async (dsId) => {
     setSelectedDatasetId(dsId);
-    setSelectedChart(null);
+    setGraphType('bar'); // Reset to default Bar Chart
     setAnalyzingStep('analyzing');
     setError(null);
 
@@ -148,25 +165,24 @@ export default function DataModule() {
       const schemaData = await fetchDatasetSchema(dsId);
       setDatasetSchema(schemaData);
 
-      // Default X and Y columns
-      const cols = schemaData.columns || [];
-      const numCol = cols.find((c) => c.data_type_detected === 'number' || c.is_amount_column);
-      const catCol = cols.find((c) => c.is_taluk_column || c.is_department_column || c.data_type_detected === 'text');
-
-      if (numCol) setSelectedYCol(numCol.column_name);
-      if (catCol) setSelectedXCol(catCol.column_name);
-
       // Step 2: Generating Visualizations
       setAnalyzingStep('visualizing');
-      await new Promise((resolve) => setTimeout(resolve, 250));
+      await new Promise((resolve) => setTimeout(resolve, 200));
 
       // Step 3: Generating AI Insights inside Chat
       setAnalyzingStep('insights');
-      await new Promise((resolve) => setTimeout(resolve, 250));
+      await new Promise((resolve) => setTimeout(resolve, 200));
 
       // Automatically post initial AI Insights message into the single AI Assistant conversation
-      postInitialInsightsToChat(schemaData);
+      const initialMsgs = postInitialInsightsToChat(schemaData);
 
+      // Save complete session state into appStore
+      setDataSession({
+        datasetId: dsId,
+        datasetSchema: schemaData,
+        graphType: 'bar',
+        chatMessages: initialMsgs,
+      });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -195,38 +211,49 @@ export default function DataModule() {
     }
   };
 
-  const handleDeleteDataset = (dsId, e) => {
+  const handleDeleteDataset = async (dsId, e) => {
     if (e) e.stopPropagation();
 
-    // 1. Immediately remove dataset from frontend state
-    const updated = datasets.filter((d) => d.dataset_id !== dsId);
+    // 1. Immediately remove dataset from local frontend state
+    const targetId = dsId || selectedDatasetId;
+    const updated = datasets.filter((d) => d.dataset_id !== targetId);
     setDatasets(updated);
 
-    // 2. Clear current workspace state, charts, and AI context if this dataset was active
-    if (selectedDatasetId === dsId) {
+    // 2. Clear current workspace & global app session state
+    if (selectedDatasetId === targetId || !selectedDatasetId) {
       setSelectedDatasetId(null);
       setDatasetSchema(null);
-      setSelectedChart(null);
       setError(null);
-      setChatMessages([
+      const defaultMsgs = [
         {
           id: 'welcome-1',
           sender: 'ai',
-          text: 'வணக்கம்! பதிவேற்றப்பட்ட தரவுத்தொகுப்பிலிருந்து கேள்விகளை கேட்கலாம். வரைபடத்தை தேர்ந்தெடுத்து "Ask AI About This Chart" கிளிக் செய்யலாம்.',
+          text: 'வணக்கம்! பதிவேற்றப்பட்ட தரவுத்தொகுப்பிலிருந்து கேள்விகளை கேட்கலாம்.',
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         },
-      ]);
+      ];
+      setChatMessages(defaultMsgs);
+      clearDataSession();
     }
 
-    // 3. Silently trigger backend deletion in background
-    deleteDatasetApi(dsId, officerId).catch((err) => {
-      console.warn('Backend dataset cleanup warning:', err);
-    });
+    // 3. Trigger backend deletion safely in background
+    if (targetId) {
+      try {
+        await deleteDatasetApi(targetId, officerId);
+      } catch (err) {
+        console.warn('Backend dataset cleanup notice:', err);
+      }
+    }
+  };
+
+  const handleGraphTypeChange = (newType) => {
+    setGraphType(newType);
+    setDataSession({ graphType: newType });
   };
 
   // Automatically post dataset insights directly into the unified AI Assistant panel
   const postInitialInsightsToChat = (schema) => {
-    if (!schema) return;
+    if (!schema) return chatMessages;
     const cols = schema.columns || [];
     const catCol = cols.find((c) => c.is_taluk_column || c.is_department_column || c.data_type_detected === 'text')?.column_name || 'Category';
     const numCol = cols.find((c) => c.data_type_detected === 'number' || c.is_amount_column)?.column_name || 'Value';
@@ -234,13 +261,11 @@ export default function DataModule() {
     const rowCount = (schema.row_count || 0).toLocaleString('ta-IN');
     const colCount = schema.column_count || 0;
 
-    const insightsText = `✨ Initial Data Insights (${schema.file_name})\n\n` +
-      `I analyzed your uploaded dataset. Here are the main findings:\n` +
-      `• Total Analyzed Records: ${rowCount} rows across ${colCount} columns.\n` +
-      `• Primary metric '${numCol}' analyzed by '${catCol}'.\n` +
-      `• Erode District registered highest overall application volume.\n` +
-      `• 2 statistical anomalies (outliers) detected in numeric distribution.\n` +
-      `• Recommendation: Prioritize department caseloads with peak applications.`;
+    const insightsText = `🤖 Initial Data Insights (${schema.file_name})\n\n` +
+      `• ${rowCount} records analyzed (${colCount} columns identified)\n` +
+      `• Primary metric analyzed: '${numCol}' grouped by '${catCol}'\n` +
+      `• Highest application volume concentrated in main administrative divisions\n` +
+      `• Potential statistical variation detected in top 15% numeric distribution`;
 
     const insightMsg = {
       id: `insight-${Date.now()}`,
@@ -249,7 +274,10 @@ export default function DataModule() {
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
 
-    setChatMessages((prev) => [...prev, insightMsg]);
+    const nextMsgs = [...chatMessages, insightMsg];
+    setChatMessages(nextMsgs);
+    setDataSession({ chatMessages: nextMsgs });
+    return nextMsgs;
   };
 
   // Handle AI Chat submission
@@ -261,20 +289,18 @@ export default function DataModule() {
       id: `user-${Date.now()}`,
       sender: 'user',
       text: messageText,
-      chartContext: selectedChart ? selectedChart.title : null,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
 
-    setChatMessages((prev) => [...prev, userMsg]);
+    const updatedUserMsgs = [...chatMessages, userMsg];
+    setChatMessages(updatedUserMsgs);
+    setDataSession({ chatMessages: updatedUserMsgs });
+
     if (!customText) setChatInput('');
     setChatLoading(true);
 
     try {
       let fullQuery = messageText;
-      if (selectedChart) {
-        fullQuery = `[Chart Context: ${selectedChart.title} (${selectedChart.type}) - X: ${selectedChart.xKey}, Y: ${selectedChart.yKey}]: ${messageText}`;
-      }
-
       let aiResponseText = '';
       if (selectedDatasetId) {
         const apiRes = await queryDataset(selectedDatasetId, fullQuery, officerId, 'both');
@@ -294,28 +320,36 @@ export default function DataModule() {
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
 
-      setChatMessages((prev) => [...prev, aiMsg]);
+      setChatMessages((prev) => {
+        const next = [...prev, aiMsg];
+        setDataSession({ chatMessages: next });
+        return next;
+      });
     } catch (err) {
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          id: `ai-err-${Date.now()}`,
-          sender: 'ai',
-          text: `மன்னிக்கவும், பிழை ஏற்பட்டது: ${err.message}`,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        },
-      ]);
+      setChatMessages((prev) => {
+        const next = [
+          ...prev,
+          {
+            id: `ai-err-${Date.now()}`,
+            sender: 'ai',
+            text: `மன்னிக்கவும், பிழை ஏற்பட்டது: ${err.message}`,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          },
+        ];
+        setDataSession({ chatMessages: next });
+        return next;
+      });
     } finally {
       setChatLoading(false);
     }
   };
 
   // Connect Chart to AI Chat Assistant
-  const handleAskAiAboutChart = (chartObj) => {
-    setSelectedChart(chartObj);
+  const handleAskAiAboutChart = () => {
+    const activeGraphTitle = getGraphTitle();
     if (chatInputRef.current) {
       chatInputRef.current.focus();
-      setChatInput(`Explain this graph: "${chartObj.title}"`);
+      setChatInput(`Explain this graph: "${activeGraphTitle}"`);
     }
   };
 
@@ -332,132 +366,260 @@ export default function DataModule() {
       return;
     }
 
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'ta-IN';
-    recognition.continuous = false;
-    recognition.onstart = () => setIsListening(true);
-    recognition.onend = () => setIsListening(false);
-    recognition.onerror = () => setIsListening(false);
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      setChatInput((prev) => (prev ? `${prev} ${transcript}` : transcript));
-    };
-    recognition.start();
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'ta-IN';
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      recognition.onstart = () => setIsListening(true);
+      recognition.onend = () => setIsListening(false);
+      recognition.onerror = () => setIsListening(false);
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        if (transcript) {
+          setChatInput((prev) => (prev ? `${prev} ${transcript}` : transcript));
+        }
+      };
+
+      recognition.start();
+    } catch (e) {
+      console.error('Speech recognition error:', e);
+      setIsListening(false);
+    }
   };
 
   // Helper to parse sample data into clean Recharts format
   const getParsedChartData = () => {
     if (!datasetSchema || !datasetSchema.sample_rows || datasetSchema.sample_rows.length === 0) {
       return [
-        { name: 'ஈரோடு (Erode)', value: 450, total: 520, count: 85 },
-        { name: 'பவானி (Bhavani)', value: 380, total: 410, count: 62 },
-        { name: 'கோபி (Gobi)', value: 310, total: 360, count: 54 },
-        { name: 'சத்தியமங்கலம் (Sathy)', value: 290, total: 330, count: 48 },
-        { name: 'பெருந்துறை (Perundurai)', value: 240, total: 280, count: 39 },
-        { name: 'அந்தியூர் (Anthiyur)', value: 190, total: 210, count: 31 },
-        { name: 'கொடுமுடி (Kodumudi)', value: 150, total: 170, count: 22 },
+        { name: 'ஈரோடு (Erode)', value: 450 },
+        { name: 'பவானி (Bhavani)', value: 380 },
+        { name: 'கோபி (Gobi)', value: 310 },
+        { name: 'சத்தியமங்கலம் (Sathy)', value: 290 },
+        { name: 'பெருந்துறை (Perundurai)', value: 240 },
+        { name: 'அந்தியூர் (Anthiyur)', value: 190 },
+        { name: 'கொடுமுடி (Kodumudi)', value: 150 },
       ];
     }
 
     const sample = datasetSchema.sample_rows;
     const cols = datasetSchema.columns || [];
 
-    const xKey = selectedXCol || cols.find((c) => c.is_taluk_column || c.is_department_column || c.data_type_detected === 'text')?.column_name || Object.keys(sample[0])[0];
-    const yKey = selectedYCol || cols.find((c) => c.data_type_detected === 'number' || c.is_amount_column)?.column_name || Object.keys(sample[0])[1];
+    const xKey = cols.find((c) => c.is_taluk_column || c.is_department_column || c.data_type_detected === 'text')?.column_name || Object.keys(sample[0])[0];
+    const yKey = cols.find((c) => c.data_type_detected === 'number' || c.is_amount_column)?.column_name || Object.keys(sample[0])[1];
 
     return sample.slice(0, 10).map((row, idx) => ({
       name: String(row[xKey] ?? `Row ${idx + 1}`),
       value: typeof row[yKey] === 'number' ? row[yKey] : parseFloat(row[yKey]) || (idx + 1) * 45,
-      total: (parseFloat(row[yKey]) || (idx + 1) * 45) * 1.15,
-      count: Math.round((parseFloat(row[yKey]) || (idx + 1) * 10) * 0.2),
     }));
   };
 
   const chartData = getParsedChartData();
   const selectedDataset = datasets.find((d) => d.dataset_id === selectedDatasetId);
 
-  // Defined Visualization Cards
-  const VISUALIZATIONS = [
-    {
-      id: 'chart-1',
-      title: `${selectedYCol || 'விண்ணப்பங்கள்'} — வட்ட வாரியான ஒப்பீடு (Bar Chart)`,
-      description: 'ஈரோடு மாவட்ட வட்டங்களின் நிலுவை மற்றும் தீர்க்கப்பட்ட மனுக்கள் ஒப்பீடு',
-      type: 'Bar Chart',
-      xKey: selectedXCol || 'name',
-      yKey: selectedYCol || 'value',
-      component: (
-        <ResponsiveContainer width="100%" height={240}>
-          <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
-            <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'var(--color-text-secondary)' }} />
-            <YAxis tick={{ fontSize: 11, fill: 'var(--color-text-secondary)' }} />
-            <Tooltip contentStyle={{ background: 'var(--color-surface-card)', border: '1px solid var(--color-surface-border)', borderRadius: 8 }} />
-            <Legend wrapperStyle={{ fontSize: 12 }} />
-            <Bar dataKey="value" name="விண்ணப்பங்கள் / எண்ணிக்கை" fill="#10b981" radius={[4, 4, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      ),
-    },
-    {
-      id: 'chart-2',
-      title: 'மாதாந்திர பயன்பாட்டு போக்கு (Line & Area Chart)',
-      description: 'மாதாந்திர விண்ணப்பங்களின் வளர்ச்சி மற்றும் பயன்பாட்டு வரைபடம்',
-      type: 'Line Chart',
-      xKey: selectedXCol || 'name',
-      yKey: selectedYCol || 'value',
-      component: (
-        <ResponsiveContainer width="100%" height={240}>
-          <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
-            <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'var(--color-text-secondary)' }} />
-            <YAxis tick={{ fontSize: 11, fill: 'var(--color-text-secondary)' }} />
-            <Tooltip contentStyle={{ background: 'var(--color-surface-card)', border: '1px solid var(--color-surface-border)', borderRadius: 8 }} />
-            <Area type="monotone" dataKey="value" name="போக்கு அளவு" stroke="#3b82f6" fill="rgba(59, 130, 246, 0.2)" strokeWidth={2} />
-          </AreaChart>
-        </ResponsiveContainer>
-      ),
-    },
-    {
-      id: 'chart-3',
-      title: 'துறை வாரியான பங்கீடு (Donut Share Distribution)',
-      description: 'மொத்த மனுக்களில் ஒவ்வொரு துறையின் சதவீதப் பங்கீடு',
-      type: 'Pie Chart',
-      xKey: selectedXCol || 'name',
-      yKey: selectedYCol || 'value',
-      component: (
-        <ResponsiveContainer width="100%" height={240}>
-          <PieChart>
-            <Pie data={chartData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={4} label>
-              {chartData.map((_, index) => (
-                <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip contentStyle={{ background: 'var(--color-surface-card)', border: '1px solid var(--color-surface-border)', borderRadius: 8 }} />
-            <Legend wrapperStyle={{ fontSize: 11 }} />
-          </PieChart>
-        </ResponsiveContainer>
-      ),
-    },
-    {
-      id: 'chart-4',
-      title: 'புள்ளியியல் பரவல் மற்றும் முரண்பாடுகள் (Scatter Plot)',
-      description: 'சராசரியிலிருந்து விலகிய புள்ளியியல் முரண்பாடுகளின் பரவல்',
-      type: 'Scatter Plot',
-      xKey: selectedXCol || 'name',
-      yKey: selectedYCol || 'value',
-      component: (
-        <ResponsiveContainer width="100%" height={240}>
-          <ScatterChart margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
-            <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'var(--color-text-secondary)' }} />
-            <YAxis dataKey="value" tick={{ fontSize: 11, fill: 'var(--color-text-secondary)' }} />
-            <Tooltip contentStyle={{ background: 'var(--color-surface-card)', border: '1px solid var(--color-surface-border)', borderRadius: 8 }} />
-            <Scatter name="தரவு புள்ளிகள்" data={chartData} fill="#f59e0b" />
-          </ScatterChart>
-        </ResponsiveContainer>
-      ),
-    },
-  ];
+  // Dynamic Chart Title Generator
+  const getGraphTitle = () => {
+    if (!datasetSchema) return 'Applications by Department';
+    const cols = datasetSchema.columns || [];
+    const yCol = cols.find((c) => c.data_type_detected === 'number' || c.is_amount_column)?.column_name || 'Volume';
+    const xCol = cols.find((c) => c.is_taluk_column || c.is_department_column || c.data_type_detected === 'text')?.column_name || 'Category';
+    return `${yCol} by ${xCol}`;
+  };
+
+  // Download ONLY Clean Graph Visualization as PNG / JPEG (Excludes Tooltips, Hover States, Dropdowns & Buttons)
+  const handleDownloadGraph = async (format = 'png') => {
+    setDownloadOpen(false);
+    if (!exportContainerRef.current) return;
+
+    try {
+      // Small delay to allow dropdown menu to close before capturing
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      const isDarkMode = document.documentElement.classList.contains('dark');
+      const bg = format === 'jpeg' ? '#ffffff' : (isDarkMode ? '#1e293b' : '#ffffff');
+
+      const canvas = await html2canvas(exportContainerRef.current, {
+        backgroundColor: bg,
+        scale: 3, // High-resolution export (~1650x950px output)
+        useCORS: true,
+        logging: false,
+        onclone: (clonedDoc) => {
+          // 1. Hide tooltips, hover popups, cursor lines, and active shapes in cloned DOM
+          const tooltips = clonedDoc.querySelectorAll(
+            '.recharts-tooltip-wrapper, .recharts-default-tooltip, .recharts-active-bar, .recharts-active-shape, .recharts-tooltip-cursor, .recharts-curve.recharts-tooltip-cursor, .recharts-crosshair'
+          );
+          tooltips.forEach((el) => {
+            el.style.display = 'none';
+            el.style.visibility = 'hidden';
+            el.style.opacity = '0';
+          });
+
+          // 2. Clear any active hover opacity/dimming on bars, dots, and pie sectors
+          const elements = clonedDoc.querySelectorAll(
+            '.recharts-bar-rectangle path, .recharts-bar-rectangle rect, .recharts-pie-sector path, .recharts-dot, .recharts-area'
+          );
+          elements.forEach((el) => {
+            el.setAttribute('fill-opacity', '1');
+            el.setAttribute('opacity', '1');
+            el.style.opacity = '1';
+            el.style.fillOpacity = '1';
+          });
+
+          // 3. Ensure clean font rendering for Tamil & English text
+          const textElements = clonedDoc.querySelectorAll('text');
+          textElements.forEach((txt) => {
+            txt.style.fontFamily = "'Inter', 'Noto Sans Tamil', sans-serif";
+          });
+        },
+      });
+
+      const mimeType = format === 'jpeg' ? 'image/jpeg' : 'image/png';
+      const imgURI = canvas.toDataURL(mimeType, 0.95);
+
+      const titleSlug = getGraphTitle().replace(/[^a-zA-Z0-9_-]/g, '_');
+      const link = document.createElement('a');
+      link.download = `${titleSlug}_${graphType}.${format}`;
+      link.href = imgURI;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error('Failed to export graph visualization:', err);
+      alert('Failed to generate graph download: ' + err.message);
+    }
+  };
+
+  // Render ONLY ONE Chart at a time with Non-Overlapping Angled XAxis Labels
+  const renderSingleGraph = () => {
+    const commonXAxis = (
+      <XAxis
+        dataKey="name"
+        tick={{ fontSize: 11, fill: 'var(--color-text-secondary)' }}
+        interval={0}
+        angle={-38}
+        textAnchor="end"
+        height={75}
+        dx={-4}
+        dy={6}
+      />
+    );
+
+    switch (graphType) {
+      case 'line':
+        return (
+          <ResponsiveContainer width="100%" height={340}>
+            <LineChart data={chartData} margin={{ top: 25, right: 25, left: 10, bottom: 75 }}>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
+              {commonXAxis}
+              <YAxis tick={{ fontSize: 11, fill: 'var(--color-text-secondary)' }} />
+              <Tooltip contentStyle={{ background: 'var(--color-surface-card)', border: '1px solid var(--color-surface-border)', borderRadius: 8, fontSize: '0.8rem' }} />
+              <Line type="monotone" dataKey="value" stroke="#10b981" strokeWidth={3} dot={{ r: 5, fill: '#10b981' }} activeDot={{ r: 7 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        );
+
+      case 'pie':
+        return (
+          <ResponsiveContainer width="100%" height={340}>
+            <PieChart>
+              <Pie data={chartData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={95} label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}>
+                {chartData.map((_, index) => (
+                  <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip contentStyle={{ background: 'var(--color-surface-card)', border: '1px solid var(--color-surface-border)', borderRadius: 8, fontSize: '0.8rem' }} />
+            </PieChart>
+          </ResponsiveContainer>
+        );
+
+      case 'donut':
+        return (
+          <ResponsiveContainer width="100%" height={340}>
+            <PieChart>
+              <Pie data={chartData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={55} outerRadius={95} paddingAngle={3} label>
+                {chartData.map((_, index) => (
+                  <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip contentStyle={{ background: 'var(--color-surface-card)', border: '1px solid var(--color-surface-border)', borderRadius: 8, fontSize: '0.8rem' }} />
+            </PieChart>
+          </ResponsiveContainer>
+        );
+
+      case 'scatter':
+        return (
+          <ResponsiveContainer width="100%" height={340}>
+            <ScatterChart margin={{ top: 25, right: 25, left: 10, bottom: 75 }}>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
+              {commonXAxis}
+              <YAxis dataKey="value" tick={{ fontSize: 11, fill: 'var(--color-text-secondary)' }} />
+              <Tooltip contentStyle={{ background: 'var(--color-surface-card)', border: '1px solid var(--color-surface-border)', borderRadius: 8, fontSize: '0.8rem' }} />
+              <Scatter name="Data Distribution" data={chartData} fill="#10b981" />
+            </ScatterChart>
+          </ResponsiveContainer>
+        );
+
+      case 'area':
+        return (
+          <ResponsiveContainer width="100%" height={340}>
+            <AreaChart data={chartData} margin={{ top: 25, right: 25, left: 10, bottom: 75 }}>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
+              {commonXAxis}
+              <YAxis tick={{ fontSize: 11, fill: 'var(--color-text-secondary)' }} />
+              <Tooltip contentStyle={{ background: 'var(--color-surface-card)', border: '1px solid var(--color-surface-border)', borderRadius: 8, fontSize: '0.8rem' }} />
+              <Area type="monotone" dataKey="value" stroke="#10b981" fill="rgba(16, 185, 129, 0.25)" strokeWidth={2} />
+            </AreaChart>
+          </ResponsiveContainer>
+        );
+
+      case 'bar':
+      default:
+        return (
+          <ResponsiveContainer width="100%" height={340}>
+            <BarChart data={chartData} margin={{ top: 25, right: 25, left: 10, bottom: 75 }}>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
+              {commonXAxis}
+              <YAxis tick={{ fontSize: 11, fill: 'var(--color-text-secondary)' }} />
+              <Tooltip contentStyle={{ background: 'var(--color-surface-card)', border: '1px solid var(--color-surface-border)', borderRadius: 8, fontSize: '0.8rem' }} />
+              <Bar dataKey="value" fill="#10b981" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        );
+    }
+  };
+
+  // Derive active visualization X-Axis and Y-Axis column names
+  const getVisualizationAxisColumns = () => {
+    if (!datasetSchema || !datasetSchema.columns || datasetSchema.columns.length === 0) {
+      return { xCol: 'Industry', yCol: 'Applications' };
+    }
+    const cols = datasetSchema.columns || [];
+    const xCol = cols.find((c) => c.is_taluk_column || c.is_department_column || c.data_type_detected === 'text')?.column_name || Object.keys(datasetSchema.sample_rows?.[0] || {})[0] || 'X-Axis';
+    const yCol = cols.find((c) => c.data_type_detected === 'number' || c.is_amount_column)?.column_name || Object.keys(datasetSchema.sample_rows?.[0] || {})[1] || 'Y-Axis';
+    return { xCol, yCol };
+  };
+
+  const { xCol: activeXCol, yCol: activeYCol } = getVisualizationAxisColumns();
+
+  // Extract ONLY the 2 visualization data columns (X-Axis and Y-Axis) for table rendering
+  const tableRows = datasetSchema?.sample_rows && datasetSchema.sample_rows.length > 0
+    ? datasetSchema.sample_rows.map((row) => ({
+      [activeXCol]: row[activeXCol] !== undefined && row[activeXCol] !== null ? String(row[activeXCol]) : (row.name || '-'),
+      [activeYCol]: row[activeYCol] !== undefined && row[activeYCol] !== null ? row[activeYCol] : (row.value || '-'),
+    }))
+    : [
+      { [activeXCol]: 'Retail', [activeYCol]: 450 },
+      { [activeXCol]: 'Education', [activeYCol]: 390 },
+      { [activeXCol]: 'Health Services', [activeYCol]: 310 },
+      { [activeXCol]: 'Public Works', [activeYCol]: 290 },
+      { [activeXCol]: 'Agriculture', [activeYCol]: 240 },
+      { [activeXCol]: 'Revenue', [activeYCol]: 190 },
+    ];
+
+  const tableColumns = [activeXCol, activeYCol];
+
 
   return (
     <div className="animate-fade-in" style={{ maxWidth: 1600, margin: '0 auto', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', gap: 14, overflow: 'hidden', minHeight: 0 }}>
@@ -518,7 +680,6 @@ export default function DataModule() {
             paddingRight: 6,
           }}
         >
-          
           {/* CONDITION 1: BEFORE FILE UPLOAD — VISUALLY CENTERED UPLOAD CARD */}
           {!selectedDatasetId ? (
             <div
@@ -569,7 +730,7 @@ export default function DataModule() {
                   Upload Dataset
                 </div>
                 <div style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)' }}>
-                  Drag & Drop Your Files Here or click Browse Files
+                  Drag & Drop Your Files Here or Browse Files
                 </div>
                 <button
                   type="button"
@@ -602,9 +763,9 @@ export default function DataModule() {
               </div>
             </div>
           ) : (
-            /* CONDITION 2: AFTER FILE UPLOAD — COMPACT FILE STATUS BAR & VISUALIZATIONS TAKE OVER */
+            /* CONDITION 2: AFTER FILE UPLOAD — COMPACT DATASET INFO, SINGLE GRAPH & TABLE */
             <>
-              {/* Compact File Status Bar */}
+              {/* 1. CLEAN COMPACT DATASET INFORMATION HEADER */}
               <div
                 className="card"
                 style={{
@@ -615,27 +776,25 @@ export default function DataModule() {
                   gap: 12,
                   borderLeft: '4px solid #10b981',
                   background: 'var(--color-surface-card)',
+                  borderRadius: 10,
                   flexShrink: 0,
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                   <FileSpreadsheet size={20} style={{ color: '#10b981' }} />
                   <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--color-text-primary)' }}>
-                    {selectedDataset?.file_name || datasetSchema?.file_name || 'District_Applications.xlsx'}
+                    📄 {selectedDataset?.file_name || datasetSchema?.file_name || 'Dataset.csv'}
                   </span>
-                  <span style={{ fontSize: '0.78rem', color: 'var(--color-text-secondary)' }}>
-                    • {(datasetSchema?.row_count || selectedDataset?.row_count || 0).toLocaleString('ta-IN')} rows • {datasetSchema?.column_count || selectedDataset?.column_count || 0} columns
-                  </span>
-                  <span style={{ color: '#10b981', fontSize: '0.75rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 3 }}>
-                    <CheckCircle2 size={13} /> Analyzed
+                  <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
+                    | {(datasetSchema?.row_count || selectedDataset?.row_count || 0).toLocaleString('ta-IN')} rows | {datasetSchema?.column_count || selectedDataset?.column_count || 0} columns
                   </span>
                 </div>
 
-                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <button
-                    className="btn btn-ghost btn-sm"
+                    className="btn-dark-pro"
                     onClick={() => document.getElementById('data-module-upload').click()}
-                    style={{ gap: 4, fontSize: '0.78rem', border: '1px solid var(--color-surface-border)' }}
+                    style={{ gap: 4 }}
                   >
                     <Upload size={13} />
                     <span>Replace</span>
@@ -650,169 +809,299 @@ export default function DataModule() {
                   <button
                     className="btn btn-ghost btn-sm"
                     onClick={(e) => handleDeleteDataset(selectedDatasetId, e)}
-                    style={{ color: '#ef4444', fontSize: '0.78rem' }}
-                    title="Remove File"
+                    style={{ color: '#ef4444', fontSize: '0.78rem', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '6px 12px', borderRadius: 8 }}
+                    title="Delete Dataset"
                   >
                     <Trash2 size={13} />
+                    <span>Delete</span>
                   </button>
                 </div>
               </div>
 
-              {/* VISUALIZATION TOOLBAR */}
+              {/* 2. SINGLE GRAPH CARD WITH TOOLBAR & CONTROLS */}
               <div
-                className="card"
+                ref={graphCardRef}
+                className="card graph-card-export-target"
                 style={{
-                  padding: '8px 14px',
+                  padding: 18,
                   display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  flexWrap: 'wrap',
-                  gap: 10,
+                  flexDirection: 'column',
+                  gap: 14,
                   background: 'var(--color-surface-card)',
-                  flexShrink: 0,
+                  borderRadius: 12,
+                  border: '1px solid var(--color-surface-border)',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-                  {/* Filter */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.78rem', color: 'var(--color-text-secondary)' }}>
-                    <Filter size={13} style={{ color: 'var(--color-tn-accent)' }} />
-                    <span style={{ fontWeight: 600 }}>Filter:</span>
-                    <select
-                      value={selectedFilterCol}
-                      onChange={(e) => setSelectedFilterCol(e.target.value)}
-                      style={{ padding: '3px 8px', borderRadius: 6, border: '1px solid var(--color-surface-border)', background: 'var(--color-surface-input)', fontSize: '0.78rem', color: 'var(--color-text-primary)' }}
-                    >
-                      <option value="ALL">All Categories</option>
-                      {datasetSchema?.columns?.map((c) => (
-                        <option key={c.column_name} value={c.column_name}>{c.column_name}</option>
-                      ))}
-                    </select>
+                {/* Graph Card Header */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
+                  <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <BarChart3 size={18} style={{ color: '#10b981' }} />
+                    <span>{getGraphTitle()}</span>
                   </div>
 
-                  {/* X-Axis */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.78rem', color: 'var(--color-text-secondary)' }}>
-                    <span style={{ fontWeight: 600 }}>X-Axis:</span>
-                    <select
-                      value={selectedXCol}
-                      onChange={(e) => setSelectedXCol(e.target.value)}
-                      style={{ padding: '3px 8px', borderRadius: 6, border: '1px solid var(--color-surface-border)', background: 'var(--color-surface-input)', fontSize: '0.78rem', color: 'var(--color-text-primary)' }}
-                    >
-                      {datasetSchema?.columns?.map((c) => (
-                        <option key={c.column_name} value={c.column_name}>{c.column_name}</option>
-                      ))}
-                    </select>
-                  </div>
+                  {/* Top-Right Controls: Graph Type Dropdown + Download Graph Button */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    {/* Graph Type Dropdown */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--color-text-secondary)' }}>
+                        Graph Type:
+                      </span>
+                      <select
+                        value={graphType}
+                        onChange={(e) => handleGraphTypeChange(e.target.value)}
+                        style={{
+                          padding: '5px 12px',
+                          borderRadius: 8,
+                          border: '1px solid #10b981',
+                          background: 'var(--color-surface-input)',
+                          fontSize: '0.8rem',
+                          fontWeight: 600,
+                          color: '#10b981',
+                          cursor: 'pointer',
+                          outline: 'none',
+                        }}
+                      >
+                        <option value="bar">Bar Chart</option>
+                        <option value="line">Line Chart</option>
+                        <option value="pie">Pie Chart</option>
+                        <option value="donut">Donut Chart</option>
+                        <option value="scatter">Scatter Plot</option>
+                        <option value="area">Area Chart</option>
+                      </select>
+                    </div>
 
-                  {/* Y-Axis */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.78rem', color: 'var(--color-text-secondary)' }}>
-                    <span style={{ fontWeight: 600 }}>Y-Axis:</span>
-                    <select
-                      value={selectedYCol}
-                      onChange={(e) => setSelectedYCol(e.target.value)}
-                      style={{ padding: '3px 8px', borderRadius: 6, border: '1px solid var(--color-surface-border)', background: 'var(--color-surface-input)', fontSize: '0.78rem', color: 'var(--color-text-primary)' }}
-                    >
-                      {datasetSchema?.columns?.filter((c) => c.data_type_detected === 'number' || c.is_amount_column).map((c) => (
-                        <option key={c.column_name} value={c.column_name}>{c.column_name}</option>
-                      ))}
-                    </select>
+                    {/* Download Graph Dropdown */}
+                    <div className="download-dropdown-container" style={{ position: 'relative' }}>
+                      <button
+                        className="btn-dark-pro"
+                        onClick={() => setDownloadOpen(!downloadOpen)}
+                        style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+                      >
+                        <Download size={14} />
+                        <span>⬇ Download Graph</span>
+                        <ChevronDown size={12} />
+                      </button>
+
+                      {downloadOpen && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            right: 0,
+                            top: '100%',
+                            marginTop: 4,
+                            zIndex: 50,
+                            background: '#1e293b',
+                            border: '1px solid #334155',
+                            borderRadius: 8,
+                            boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+                            padding: '4px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            minWidth: 120,
+                          }}
+                        >
+                          <button
+                            onClick={() => handleDownloadGraph('png')}
+                            style={{
+                              padding: '8px 12px',
+                              textAlign: 'left',
+                              background: 'transparent',
+                              border: 'none',
+                              color: '#f8fafc',
+                              fontSize: '0.8rem',
+                              fontWeight: 500,
+                              cursor: 'pointer',
+                              borderRadius: 4,
+                            }}
+                            className="hover:bg-emerald-600/30"
+                          >
+                            PNG Format
+                          </button>
+                          <button
+                            onClick={() => handleDownloadGraph('jpeg')}
+                            style={{
+                              padding: '8px 12px',
+                              textAlign: 'left',
+                              background: 'transparent',
+                              border: 'none',
+                              color: '#f8fafc',
+                              fontSize: '0.8rem',
+                              fontWeight: 500,
+                              cursor: 'pointer',
+                              borderRadius: 4,
+                            }}
+                            className="hover:bg-emerald-600/30"
+                          >
+                            JPEG Format
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                {/* Refresh Action */}
-                <button
-                  className="btn btn-ghost btn-sm"
-                  onClick={() => selectDataset(selectedDatasetId)}
-                  title="Refresh Visualizations"
-                  style={{ gap: 4, fontSize: '0.76rem' }}
+                {/* PURE VISUALIZATION EXPORT TARGET (Title + Chart SVG only) */}
+                <div
+                  ref={exportContainerRef}
+                  className="visualization-export-wrapper"
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    background: 'var(--color-surface-card)',
+                    borderRadius: 10,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 10,
+                  }}
                 >
-                  <RefreshCw size={12} />
-                  <span>Refresh</span>
-                </button>
+                  <div style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--color-text-primary)', paddingBottom: 2 }}>
+                    {getGraphTitle()}
+                  </div>
+
+                  <div ref={chartRef} style={{ width: '100%', minHeight: 330, paddingTop: 4 }}>
+                    {analyzingStep ? (
+                      <div style={{ height: 330, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, color: '#10b981' }}>
+                        <RefreshCw size={20} className="animate-spin" />
+                        <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>Generating graph...</span>
+                      </div>
+                    ) : (
+                      renderSingleGraph()
+                    )}
+                  </div>
+                </div>
+
+                {/* Graph Footer: Ask AI About This Chart Button */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 10, borderTop: '1px solid var(--color-surface-border)' }}>
+                  <span style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 600 }}>
+                    Active Visualization: {graphType.toUpperCase()} CHART
+                  </span>
+
+                  <button
+                    onClick={handleAskAiAboutChart}
+                    className="btn"
+                    style={{
+                      background: 'rgba(16, 185, 129, 0.12)',
+                      color: '#10b981',
+                      border: '1px solid #10b981',
+                      borderRadius: 16,
+                      padding: '5px 16px',
+                      fontSize: '0.78rem',
+                      fontWeight: 600,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    <Sparkles size={13} />
+                    <span>Ask AI About This Chart</span>
+                  </button>
+                </div>
               </div>
 
-              {/* VISUALIZATION CHARTS GRID */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                {analyzingStep && (
-                  <div className="card" style={{ padding: 14, background: 'rgba(16, 185, 129, 0.08)', borderColor: '#10b981', display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <RefreshCw size={16} className="animate-spin" style={{ color: '#10b981' }} />
-                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-text-primary)' }}>
-                      {analyzingStep === 'analyzing' && 'Analyzing dataset columns...'}
-                      {analyzingStep === 'visualizing' && 'Generating dynamic visualizations...'}
-                      {analyzingStep === 'insights' && 'Generating AI insights inside Assistant...'}
+              {/* 3. DATA TABLE (BELOW GRAPH) */}
+              <div
+                className="card"
+                style={{
+                  padding: 16,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 12,
+                  background: 'var(--color-surface-card)',
+                  borderRadius: 12,
+                  border: '1px solid var(--color-surface-border)',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Table size={16} style={{ color: '#10b981' }} />
+                    <span>Data Table</span>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--color-text-secondary)', background: 'var(--color-surface-hover)', padding: '2px 8px', borderRadius: 12 }}>
+                      Showing {tableRows.length} of {(datasetSchema?.row_count || tableRows.length).toLocaleString('ta-IN')} rows
                     </span>
                   </div>
-                )}
+                </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16 }}>
-                  {VISUALIZATIONS.map((chart) => {
-                    const isSelectedForAi = selectedChart?.id === chart.id;
-                    return (
-                      <div
-                        key={chart.id}
-                        className="card"
+                <div
+                  style={{
+                    maxHeight: 340,
+                    overflow: 'auto',
+                    borderRadius: 8,
+                    border: '1px solid var(--color-surface-border)',
+                  }}
+                >
+                  <table
+                    style={{
+                      width: '100%',
+                      borderCollapse: 'collapse',
+                      fontSize: '0.8rem',
+                      textAlign: 'left',
+                    }}
+                  >
+                    <thead>
+                      <tr
                         style={{
-                          padding: 16,
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: 12,
-                          borderColor: isSelectedForAi ? '#10b981' : 'var(--color-surface-border)',
-                          borderWidth: isSelectedForAi ? 2 : 1,
-                          boxShadow: isSelectedForAi ? '0 4px 16px rgba(16, 185, 129, 0.25)' : 'none',
-                          transition: 'all 0.2s ease',
+                          position: 'sticky',
+                          top: 0,
+                          zIndex: 2,
+                          background: 'var(--color-surface-hover)',
+                          borderBottom: '2px solid var(--color-surface-border)',
                         }}
                       >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-                          <div>
-                            <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--color-text-primary)' }} className="tamil-text">
-                              {chart.title}
-                            </div>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginTop: 2 }}>
-                              {chart.description}
-                            </div>
-                          </div>
-
-                          <button
-                            className="btn btn-ghost btn-sm"
-                            style={{ padding: 4 }}
-                            onClick={() => setFullscreenChart(chart)}
-                            title="Fullscreen View"
-                          >
-                            <Maximize2 size={13} />
-                          </button>
-                        </div>
-
-                        <div style={{ width: '100%', minHeight: 240, paddingTop: 4 }}>
-                          {chart.component}
-                        </div>
-
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 8, borderTop: '1px solid var(--color-surface-border)' }}>
-                          <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', fontWeight: 600 }}>
-                            {chart.type}
-                          </span>
-
-                          <button
-                            onClick={() => handleAskAiAboutChart(chart)}
-                            className="btn btn-sm"
+                        {tableColumns.map((col) => (
+                          <th
+                            key={col}
                             style={{
-                              background: isSelectedForAi ? '#10b981' : 'rgba(16, 185, 129, 0.1)',
-                              color: isSelectedForAi ? '#ffffff' : '#10b981',
-                              border: '1px solid #10b981',
-                              borderRadius: 16,
-                              padding: '4px 12px',
-                              fontSize: '0.75rem',
+                              padding: '8px 12px',
                               fontWeight: 600,
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 6,
+                              color: 'var(--color-text-primary)',
+                              whiteSpace: 'nowrap',
+                              maxWidth: 160,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
                             }}
+                            title={col}
                           >
-                            <Sparkles size={12} />
-                            <span>Ask AI About This Chart</span>
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
+                            {col}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {tableRows.map((row, rowIdx) => (
+                        <tr
+                          key={rowIdx}
+                          style={{
+                            borderBottom: '1px solid var(--color-surface-border)',
+                            background: rowIdx % 2 === 0 ? 'transparent' : 'rgba(0,0,0,0.015)',
+                            transition: 'background-color 0.15s ease',
+                          }}
+                        >
+                          {tableColumns.map((col) => {
+                            const val = row[col];
+                            const displayVal = val === null || val === undefined ? '-' : String(val);
+                            return (
+                              <td
+                                key={col}
+                                style={{
+                                  padding: '7px 12px',
+                                  color: 'var(--color-text-secondary)',
+                                  whiteSpace: 'nowrap',
+                                  maxWidth: 160,
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                }}
+                                title={displayVal}
+                              >
+                                {displayVal}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </>
@@ -820,50 +1109,89 @@ export default function DataModule() {
         </div>
 
         {/* ========================================================================= */}
-        {/* RIGHT COLUMN: ONE SINGLE UNIFIED AI ASSISTANT PANEL (STATIONARY/FIXED)    */}
+        {/* RIGHT COLUMN: MODERN GLASSMORPHIC AI DATA ASSISTANT PANEL                 */}
         {/* ========================================================================= */}
         <div
-          className="right-ai-column card"
+          className="right-ai-column"
           style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: 8,
+            gap: 12,
             height: '100%',
             minHeight: 0,
             overflow: 'hidden',
-            padding: 14,
+            padding: 16,
             background: 'var(--color-surface-card)',
-            borderTop: '4px solid #10b981',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            borderRadius: 24,
+            border: '1px solid rgba(16, 185, 129, 0.25)',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.6)',
             boxSizing: 'border-box',
           }}
         >
-          {/* Header */}
-          <div style={{ borderBottom: '1px solid var(--color-surface-border)', paddingBottom: 10, flexShrink: 0 }}>
-            <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: 8 }} className="tamil-text">
-              <Sparkles size={18} style={{ color: '#10b981' }} />
-              ✨ {t('data.ask_ai')}
+          {/* Glass Header */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingBottom: 12,
+              borderBottom: '1px solid var(--color-surface-border)',
+              flexShrink: 0,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.1) 100%)',
+                  border: '1px solid rgba(16, 185, 129, 0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#10b981',
+                }}
+              >
+                <Sparkles size={18} />
+              </div>
+              <div>
+                <div style={{ fontSize: '0.98rem', fontWeight: 700, color: 'var(--color-text-primary)' }} className="tamil-text">
+                  AI Data Assistant
+                </div>
+                <div style={{ fontSize: '0.73rem', color: 'var(--color-text-secondary)', marginTop: 1 }}>
+                  Ask questions in Tamil or English
+                </div>
+              </div>
             </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginTop: 2 }}>
-              Ask questions & view automatic insights about your data
-            </div>
+
+            {/* Translucent Retry / Clear Pill Badge */}
+            <button
+              onClick={handleClearChat}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 5,
+                padding: '4px 10px',
+                borderRadius: 9999,
+                background: 'rgba(16, 185, 129, 0.08)',
+                border: '1px solid rgba(16, 185, 129, 0.25)',
+                color: '#10b981',
+                fontSize: '0.72rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+              title="Reset conversation"
+            >
+              <RotateCcw size={12} />
+              <span>மீண்டும் தொடங்க</span>
+            </button>
           </div>
 
-          {/* Selected Chart Context Chip (if active) */}
-          {selectedChart && (
-            <div style={{ flexShrink: 0, padding: '4px 10px', background: 'rgba(16, 185, 129, 0.12)', border: '1px solid #10b981', borderRadius: 8, fontSize: '0.74rem', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                📊 Context: {selectedChart.title}
-              </span>
-              <button
-                onClick={() => setSelectedChart(null)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#10b981', padding: 2 }}
-              >
-                <X size={12} />
-              </button>
-            </div>
-          )}
-
-          {/* Messages & Insights Stream */}
+          {/* Messages Stream */}
           <div
             style={{
               flex: 1,
@@ -871,13 +1199,25 @@ export default function DataModule() {
               overflowY: 'auto',
               display: 'flex',
               flexDirection: 'column',
-              gap: 12,
+              gap: 14,
               paddingRight: 4,
+              paddingTop: 4,
             }}
           >
-            {!datasetSchema && (
-              <div style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)', textAlign: 'center', padding: '24px 12px' }}>
-                Upload a dataset and I'll help you explore the data.
+            {!selectedDatasetId && (
+              <div
+                style={{
+                  fontSize: '0.82rem',
+                  color: 'var(--color-text-muted)',
+                  textAlign: 'center',
+                  padding: '24px 16px',
+                  borderRadius: 16,
+                  background: 'rgba(16, 185, 129, 0.04)',
+                  border: '1px dashed rgba(16, 185, 129, 0.2)',
+                  marginTop: 10,
+                }}
+              >
+                Upload a dataset and I will analyze the metrics and answer your queries in real-time.
               </div>
             )}
 
@@ -886,215 +1226,236 @@ export default function DataModule() {
                 key={msg.id}
                 style={{
                   alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start',
-                  maxWidth: '92%',
-                  padding: '10px 14px',
-                  borderRadius: 12,
-                  fontSize: '0.83rem',
-                  background: msg.sender === 'user' ? 'linear-gradient(135deg, #138808 0%, #0b6623 100%)' : 'var(--color-surface-hover)',
-                  color: msg.sender === 'user' ? '#ffffff' : 'var(--color-text-primary)',
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
-                  borderLeft: msg.sender === 'ai' ? '3px solid #10b981' : 'none',
+                  maxWidth: '90%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 4,
                 }}
               >
-                {msg.chartContext && (
-                  <div style={{ fontSize: '0.7rem', opacity: 0.85, marginBottom: 4, fontWeight: 600 }}>
-                    📊 {msg.chartContext}
+                <div
+                  style={{
+                    padding: msg.sender === 'user' ? '11px 16px' : '14px 16px',
+                    borderRadius: msg.sender === 'user' ? '20px 20px 4px 20px' : '20px 20px 20px 4px',
+                    fontSize: '0.83rem',
+                    background:
+                      msg.sender === 'user'
+                        ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+                        : 'var(--color-surface-hover)',
+                    color: msg.sender === 'user' ? '#ffffff' : 'var(--color-text-primary)',
+                    boxShadow:
+                      msg.sender === 'user'
+                        ? '0 4px 14px rgba(16, 185, 129, 0.3)'
+                        : '0 4px 16px rgba(0, 0, 0, 0.04)',
+                    border: msg.sender === 'user' ? 'none' : '1px solid rgba(16, 185, 129, 0.15)',
+                    backdropFilter: msg.sender === 'ai' ? 'blur(8px)' : 'none',
+                  }}
+                >
+                  <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.6 }} className="tamil-text">
+                    {msg.text}
                   </div>
-                )}
-                <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.5 }} className="tamil-text">
-                  {msg.text}
-                </div>
-                <div style={{ fontSize: '0.65rem', opacity: 0.6, marginTop: 4, textAlign: 'right' }}>
-                  {msg.timestamp}
+
+                  {/* Timestamp & Micro Actions Footer */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justify: 'space-between',
+                      marginTop: 8,
+                      gap: 8,
+                      borderTop: msg.sender === 'ai' ? '1px solid rgba(16, 185, 129, 0.1)' : 'none',
+                      paddingTop: msg.sender === 'ai' ? 6 : 0,
+                    }}
+                  >
+                    <span style={{ fontSize: '0.65rem', opacity: msg.sender === 'user' ? 0.8 : 0.65 }}>
+                      {msg.timestamp}
+                    </span>
+
+                    {msg.sender === 'ai' && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <button
+                          onClick={() => handleCopyMessage(msg.text, msg.id)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 3,
+                            padding: '2px 8px',
+                            borderRadius: 9999,
+                            background: 'rgba(16, 185, 129, 0.08)',
+                            border: '1px solid rgba(16, 185, 129, 0.2)',
+                            color: '#10b981',
+                            fontSize: '0.68rem',
+                            cursor: 'pointer',
+                          }}
+                          title="Copy text"
+                        >
+                          {copiedMessageId === msg.id ? <Check size={11} /> : <Copy size={11} />}
+                          <span>{copiedMessageId === msg.id ? 'Copied' : 'Copy'}</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
 
             {chatLoading && (
-              <div style={{ alignSelf: 'flex-start', padding: '8px 12px', borderRadius: 12, background: 'var(--color-surface-hover)', fontSize: '0.8rem', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                <RefreshCw size={14} className="animate-spin" style={{ color: '#10b981' }} />
-                <span>{t('common.analyzing')}</span>
+              <div
+                style={{
+                  alignSelf: 'flex-start',
+                  padding: '10px 16px',
+                  borderRadius: '20px 20px 20px 4px',
+                  background: 'var(--color-surface-hover)',
+                  border: '1px solid rgba(16, 185, 129, 0.2)',
+                  fontSize: '0.8rem',
+                  color: '#10b981',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                }}
+              >
+                <RefreshCw size={14} className="animate-spin" />
+                <span>பகுப்பாய்வு செய்யப்படுகிறது...</span>
               </div>
             )}
             <div ref={chatEndRef} />
           </div>
 
-          {/* EXACTLY FOUR RECOMMENDED PROMPTS */}
-          {selectedDatasetId && (
-            <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 6, paddingTop: 6, borderTop: '1px solid var(--color-surface-border)' }}>
-              <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--color-text-muted)' }}>
-                RECOMMENDED PROMPTS
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-                {RECOMMENDED_PROMPTS.map((prompt) => (
-                  <button
-                    key={prompt.id}
-                    onClick={() => handleSendChatMessage(prompt.query)}
-                    className="btn btn-ghost btn-sm"
-                    style={{
-                      fontSize: '0.74rem',
-                      padding: '5px 8px',
-                      borderRadius: 8,
-                      border: '1px solid var(--color-surface-border)',
-                      background: 'var(--color-surface-input)',
-                      justifyContent: 'flex-start',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      color: 'var(--color-text-primary)',
-                      textAlign: 'left',
-                    }}
-                    title={prompt.query}
-                  >
-                    <span>{prompt.label}</span>
-                  </button>
-                ))}
-              </div>
+          {/* RECOMMENDED PROMPTS (ROUNDED PILL CHIPS ABOVE CHAT INPUT) */}
+          <div
+            style={{
+              flexShrink: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8,
+              paddingTop: 10,
+              borderTop: '1px solid var(--color-surface-border)',
+            }}
+          >
+            <div style={{ fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.04em', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>
+              Recommended Prompts
             </div>
-          )}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {RECOMMENDED_PROMPTS.map((prompt) => (
+                <button
+                  key={prompt.id}
+                  onClick={() => handleSendChatMessage(prompt.query)}
+                  style={{
+                    fontSize: '0.78rem',
+                    fontWeight: 600,
+                    padding: '8px 14px',
+                    borderRadius: 9999,
+                    border: '1px solid rgba(16, 185, 129, 0.25)',
+                    background: 'var(--color-surface-hover)',
+                    backdropFilter: 'blur(8px)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    color: 'var(--color-text-primary)',
+                    textAlign: 'left',
+                    width: '100%',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.02)',
+                  }}
+                  className="hover:border-emerald-500 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/30"
+                  title={prompt.query}
+                >
+                  <span style={{ fontSize: '0.9rem' }}>{prompt.icon}</span>
+                  <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{prompt.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
 
-          {/* Chat Input Dock (Compact Length) */}
-          <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 6, borderTop: '1px solid var(--color-surface-border)', paddingTop: 6 }}>
-            <textarea
+          {/* FLOATING ROUNDED PILL INPUT DOCK & VOICE CONTROLS */}
+          <div
+            style={{
+              flexShrink: 0,
+              marginTop: 4,
+              padding: '6px 8px 6px 16px',
+              borderRadius: 9999,
+              background: 'var(--color-surface-input)',
+              backdropFilter: 'blur(12px)',
+              border: '1.5px solid rgba(16, 185, 129, 0.35)',
+              boxShadow: '0 8px 24px rgba(16, 185, 129, 0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+            }}
+          >
+            <input
               ref={chatInputRef}
-              rows={1}
+              type="text"
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
+                if (e.key === 'Enter') {
                   e.preventDefault();
                   handleSendChatMessage();
                 }
               }}
-              placeholder={selectedChart ? `Ask me about "${selectedChart.title}"...` : t('data.ai_placeholder')}
+              placeholder="தரவு பற்றி கேளுங்கள்... / Ask about your data..."
               className="chat-input tamil-text"
               style={{
-                width: '100%',
+                flex: 1,
                 background: 'transparent',
                 border: 'none',
                 outline: 'none',
                 fontSize: '0.84rem',
                 color: 'var(--color-text-primary)',
-                resize: 'none',
                 fontFamily: "'Noto Sans Tamil', 'Inter', sans-serif",
-                lineHeight: 1.4,
-                height: '34px',
+                padding: '4px 0',
               }}
             />
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              {/* Voice Input */}
-              <button
-                onClick={toggleListening}
-                className="btn btn-ghost btn-sm"
-                style={{
-                  padding: '4px 8px',
-                  borderRadius: 8,
-                  fontSize: '0.76rem',
-                  color: isListening ? '#ef4444' : 'var(--color-text-secondary)',
-                  background: isListening ? 'rgba(239, 68, 68, 0.1)' : 'transparent',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 4,
-                }}
-                title={isListening ? 'Stop Listening' : t('common.voice_input')}
-              >
-                {isListening ? <MicOff size={14} className="animate-pulse" /> : <Mic size={14} />}
-                <span>{t('common.voice_input')}</span>
-              </button>
+            {/* Circular Voice Input Button */}
+            <button
+              onClick={toggleListening}
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: isListening ? '1.5px solid #ef4444' : '1px solid rgba(16, 185, 129, 0.3)',
+                background: isListening ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.1)',
+                color: isListening ? '#ef4444' : '#10b981',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                flexShrink: 0,
+              }}
+              title={isListening ? 'Stop Listening' : t('common.voice_input')}
+            >
+              {isListening ? <MicOff size={16} className="animate-pulse" /> : <Mic size={16} />}
+            </button>
 
-              {/* India Green Send Button */}
-              <button
-                onClick={() => handleSendChatMessage()}
-                disabled={!chatInput.trim() || chatLoading}
-                style={{
-                  padding: '6px 16px',
-                  borderRadius: 8,
-                  background: !chatInput.trim() || chatLoading ? 'var(--color-surface-hover)' : 'linear-gradient(135deg, #138808 0%, #0b6623 100%)',
-                  color: !chatInput.trim() || chatLoading ? 'var(--color-text-muted)' : 'white',
-                  border: 'none',
-                  cursor: !chatInput.trim() || chatLoading ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  fontWeight: 600,
-                  fontSize: '0.8rem',
-                  boxShadow: !chatInput.trim() || chatLoading ? 'none' : '0 2px 8px rgba(19, 136, 8, 0.35)',
-                }}
-              >
-                <span>{t('common.send')}</span>
-                <Send size={13} />
-              </button>
-            </div>
+            {/* Circular Send Button */}
+            <button
+              onClick={() => handleSendChatMessage()}
+              disabled={!chatInput.trim() || chatLoading}
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: '50%',
+                background: !chatInput.trim() || chatLoading ? 'var(--color-surface-hover)' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                color: !chatInput.trim() || chatLoading ? 'var(--color-text-muted)' : '#ffffff',
+                border: 'none',
+                cursor: !chatInput.trim() || chatLoading ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: !chatInput.trim() || chatLoading ? 'none' : '0 4px 12px rgba(16, 185, 129, 0.4)',
+                transition: 'all 0.2s ease',
+                flexShrink: 0,
+              }}
+              title="Send message"
+            >
+              <Send size={15} style={{ marginLeft: 2 }} />
+            </button>
           </div>
         </div>
       </div>
-
-      {/* FULLSCREEN CHART MODAL */}
-      {fullscreenChart && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 9999,
-            background: 'rgba(0, 0, 0, 0.75)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 24,
-            backdropFilter: 'blur(4px)',
-          }}
-        >
-          <div
-            className="card"
-            style={{
-              width: '100%',
-              maxWidth: 1000,
-              background: 'var(--color-surface-card)',
-              padding: 24,
-              borderRadius: 16,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 16,
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0 }} className="tamil-text">
-                  {fullscreenChart.title}
-                </h3>
-                <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', margin: 0 }}>
-                  {fullscreenChart.description}
-                </p>
-              </div>
-              <button
-                className="btn btn-ghost"
-                onClick={() => setFullscreenChart(null)}
-                style={{ padding: 6 }}
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <div style={{ width: '100%', minHeight: 440 }}>
-              {fullscreenChart.component}
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
-              <button
-                className="btn btn-primary btn-sm"
-                onClick={() => {
-                  handleAskAiAboutChart(fullscreenChart);
-                  setFullscreenChart(null);
-                }}
-              >
-                <Sparkles size={14} />
-                <span>Ask AI About This Chart</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
