@@ -58,7 +58,7 @@ export default function Sidebar() {
             <div
               className="tamil-text"
               style={{
-                fontSize: '0.78rem',
+                fontSize: '0.8rem',
                 fontWeight: 700,
                 color: '#FFFFFF',
                 whiteSpace: 'normal',
@@ -66,18 +66,6 @@ export default function Sidebar() {
               }}
             >
               {t('app_title')}
-            </div>
-            <div
-              style={{
-                fontSize: '0.65rem',
-                color: 'rgba(255,255,255,0.6)',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                lineHeight: 1.2,
-              }}
-            >
-              {t('app_subtitle')}
             </div>
           </div>
         )}

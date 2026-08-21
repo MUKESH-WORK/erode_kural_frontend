@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useAppStore from '../../stores/appStore';
 import useChatStore from '../../stores/useChatStore';
-import { Sun, Moon, Bell, Globe, User, Bot, Sparkles } from 'lucide-react';
+import { Sun, Moon, Bell, Globe, User, Bot } from 'lucide-react';
 
 export default function TopBar() {
   const { t, i18n } = useTranslation();
