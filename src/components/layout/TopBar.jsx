@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useAppStore from '../../stores/appStore';
-import useChatStore from '../../stores/useChatStore';
-import { Sun, Moon, Bell, Globe, User, Bot } from 'lucide-react';
+import { Sun, Moon, Bell, Globe, User } from 'lucide-react';
 
 export default function TopBar() {
   const { t, i18n } = useTranslation();
   const { theme, toggleTheme, officerId, setOfficerId } = useAppStore();
-  const { toggleOpen, isOpen } = useChatStore();
   const [showOfficerInput, setShowOfficerInput] = useState(false);
 
   const toggleLang = () => {
