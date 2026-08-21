@@ -40,6 +40,8 @@
     "urgent": "Urgent",
     "upload": "Upload File",
     "upload_desc": "Drag & drop PDF, JPG, PNG, TIFF, or EML files here",
+    "choose_file": "Choose File",
+    "or_drag_drop": "or drag and drop here",
     "source_id": "Source ID",
     "file_name": "File Name",
     "type": "Type",
@@ -58,7 +60,15 @@
     "filter_all": "All",
     "filter_by_status": "Filter by Status",
     "filter_by_dept": "Filter by Department",
-    "filter_by_priority": "Filter by Priority"
+    "filter_by_priority": "Filter by Priority",
+    "filter_by_size": "Filter by Size",
+    "filter_by_date": "Filter by Date",
+    "filter_by_month": "Filter by Month",
+    "filter_by_year": "Filter by Year",
+    "size_small": "Small (< 1 MB)",
+    "size_medium": "Medium (1 - 5 MB)",
+    "size_large": "Large (> 5 MB)",
+    "clear_filters": "Clear Filters"
   },
   "detail": {
     "title": "Item Details",

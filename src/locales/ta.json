@@ -40,6 +40,8 @@
     "urgent": "அவசரம்",
     "upload": "கோப்பு பதிவேற்றம்",
     "upload_desc": "PDF, JPG, PNG, TIFF, அல்லது EML கோப்புகளை இங்கே இழுக்கவும்",
+    "choose_file": "கோப்பைத் தேர்ந்தெடுக்கவும்",
+    "or_drag_drop": "அல்லது இங்கே இழுத்து விடவும்",
     "source_id": "ஆதார எண்",
     "file_name": "கோப்பு பெயர்",
     "type": "வகை",
@@ -58,7 +60,15 @@
     "filter_all": "அனைத்தும்",
     "filter_by_status": "நிலை படி வடிகட்டு",
     "filter_by_dept": "துறை படி வடிகட்டு",
-    "filter_by_priority": "முன்னுரிமை படி வடிகட்டு"
+    "filter_by_priority": "முன்னுரிமை படி வடிகட்டு",
+    "filter_by_size": "அளவு படி வடிகட்டு",
+    "filter_by_date": "தேதி படி வடிகட்டு",
+    "filter_by_month": "மாதம் படி வடிகட்டு",
+    "filter_by_year": "ஆண்டு படி வடிகட்டு",
+    "size_small": "சிறிய (< 1 MB)",
+    "size_medium": "நடுத்தர (1 - 5 MB)",
+    "size_large": "பெரிய (> 5 MB)",
+    "clear_filters": "வடிகட்டிகளை நீக்கு"
   },
   "detail": {
     "title": "பணி விவரங்கள்",

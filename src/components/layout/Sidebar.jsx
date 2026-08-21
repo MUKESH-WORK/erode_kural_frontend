@@ -54,14 +54,14 @@ export default function Sidebar() {
       >
         <TnEmblem size={sidebarCollapsed ? 28 : 32} className="text-[#c8a951] flex-shrink-0" />
         {!sidebarCollapsed && (
-          <div style={{ overflow: 'hidden', minWidth: 0 }}>
+          <div style={{ overflow: 'hidden', minWidth: 0, flex: 1 }}>
             <div
               className="tamil-text"
               style={{
                 fontSize: '0.8rem',
                 fontWeight: 700,
                 color: '#FFFFFF',
-                whiteSpace: 'normal',
+                whiteSpace: 'pre-line',
                 lineHeight: 1.25,
               }}
             >
