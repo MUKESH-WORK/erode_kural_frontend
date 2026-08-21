@@ -58,16 +58,14 @@ export default function Sidebar() {
             <div
               className="tamil-text"
               style={{
-                fontSize: '0.76rem',
+                fontSize: '0.8rem',
                 fontWeight: 700,
                 color: '#FFFFFF',
                 whiteSpace: 'pre-line',
                 lineHeight: 1.25,
               }}
             >
-              {t('app_title')
-                .replace('Collectorate Office', 'Collectorate\nOffice')
-                .replace('ஆட்சியர் அலுவலகம்', 'ஆட்சியர்\nஅலுவலகம்')}
+              {t('app_title')}
             </div>
           </div>
         )}

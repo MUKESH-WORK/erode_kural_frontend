@@ -12,6 +12,7 @@
   "dependencies": {
     "@tanstack/react-table": "^9.1.2",
     "clsx": "^2.1.1",
+    "html2canvas": "^1.4.1",
     "i18next": "^26.3.6",
     "lucide-react": "^1.33.0",
     "react": "^19.2.8",
