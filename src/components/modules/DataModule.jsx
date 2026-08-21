@@ -680,12 +680,12 @@ export default function DataModule() {
       }}
     >
       {/* Module Title Header */}
-      <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+      <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
         <div>
-          <h1 className="module-title tamil-text" style={{ fontSize: '1.4rem', fontWeight: 700, margin: 0 }}>
+          <h1 className="module-title tamil-text" style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0 }}>
             {t('data.title')}
           </h1>
-          <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', margin: '4px 0 0 0' }} className="tamil-text">
+          <p style={{ fontSize: '0.95rem', color: 'var(--color-text-secondary)', margin: '4px 0 0 0' }} className="tamil-text">
             {t('data.subtitle')}
           </p>
         </div>
@@ -819,11 +819,11 @@ export default function DataModule() {
               <div
                 className="card"
                 style={{
-                  padding: '10px 16px',
+                  padding: '12px 16px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  gap: 12,
+                  gap: 10,
                   borderLeft: '4px solid #10b981',
                   background: 'var(--color-surface-card)',
                   borderRadius: 10,
@@ -832,10 +832,10 @@ export default function DataModule() {
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                   <FileSpreadsheet size={20} style={{ color: '#10b981' }} />
-                  <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--color-text-primary)' }}>
+                  <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--color-text-primary)' }}>
                     📄 {selectedDataset?.file_name || datasetSchema?.file_name || 'Dataset.csv'}
                   </span>
-                  <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
+                  <span style={{ fontSize: '0.88rem', color: 'var(--color-text-secondary)' }}>
                     | {(datasetSchema?.row_count || selectedDataset?.row_count || 0).toLocaleString('ta-IN')} rows | {datasetSchema?.column_count || selectedDataset?.column_count || 0} columns
                   </span>
                 </div>
@@ -844,7 +844,7 @@ export default function DataModule() {
                   <button
                     className="btn-dark-pro"
                     onClick={() => document.getElementById('data-module-upload').click()}
-                    style={{ gap: 4 }}
+                    style={{ gap: 4, fontSize: '0.88rem' }}
                   >
                     <Upload size={13} />
                     <span>Replace</span>
@@ -859,7 +859,7 @@ export default function DataModule() {
                   <button
                     className="btn btn-ghost btn-sm"
                     onClick={(e) => handleDeleteDataset(selectedDatasetId, e)}
-                    style={{ color: '#ef4444', fontSize: '0.78rem', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '6px 12px', borderRadius: 8 }}
+                    style={{ color: '#ef4444', fontSize: '0.88rem', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '6px 12px', borderRadius: 8 }}
                     title="Delete Dataset"
                   >
                     <Trash2 size={13} />
@@ -873,10 +873,10 @@ export default function DataModule() {
                 ref={graphCardRef}
                 className="card graph-card-export-target"
                 style={{
-                  padding: 18,
+                  padding: '12px 16px',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: 14,
+                  gap: 10,
                   background: 'var(--color-surface-card)',
                   borderRadius: 12,
                   border: '1px solid var(--color-surface-border)',
@@ -884,7 +884,7 @@ export default function DataModule() {
               >
                 {/* Graph Card Header */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
-                  <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
                     <BarChart3 size={18} style={{ color: '#10b981' }} />
                     <span>{getGraphTitle()}</span>
                   </div>
@@ -893,7 +893,7 @@ export default function DataModule() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     {/* Graph Type Dropdown */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--color-text-secondary)' }}>
+                      <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--color-text-secondary)' }}>
                         Graph Type:
                       </span>
                       <select
@@ -904,7 +904,7 @@ export default function DataModule() {
                           borderRadius: 8,
                           border: '1px solid #10b981',
                           background: 'var(--color-surface-input)',
-                          fontSize: '0.8rem',
+                          fontSize: '1rem',
                           fontWeight: 600,
                           color: '#10b981',
                           cursor: 'pointer',
@@ -925,7 +925,7 @@ export default function DataModule() {
                       <button
                         className="btn-dark-pro"
                         onClick={() => setDownloadOpen(!downloadOpen)}
-                        style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+                        style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.88rem' }}
                       >
                         <Download size={14} />
                         <span>⬇ Download Graph</span>
@@ -958,7 +958,7 @@ export default function DataModule() {
                               background: 'transparent',
                               border: 'none',
                               color: '#f8fafc',
-                              fontSize: '0.8rem',
+                              fontSize: '0.88rem',
                               fontWeight: 500,
                               cursor: 'pointer',
                               borderRadius: 4,
@@ -975,7 +975,7 @@ export default function DataModule() {
                               background: 'transparent',
                               border: 'none',
                               color: '#f8fafc',
-                              fontSize: '0.8rem',
+                              fontSize: '0.88rem',
                               fontWeight: 500,
                               cursor: 'pointer',
                               borderRadius: 4,
@@ -1004,7 +1004,7 @@ export default function DataModule() {
                     gap: 10,
                   }}
                 >
-                  <div style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--color-text-primary)', paddingBottom: 2 }}>
+                  <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--color-text-primary)', paddingBottom: 2 }}>
                     {getGraphTitle()}
                   </div>
 
@@ -1012,7 +1012,7 @@ export default function DataModule() {
                     {analyzingStep ? (
                       <div style={{ height: 330, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, color: '#10b981' }}>
                         <RefreshCw size={20} className="animate-spin" />
-                        <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>Generating graph...</span>
+                        <span style={{ fontSize: '1rem', fontWeight: 600 }}>Generating graph...</span>
                       </div>
                     ) : (
                       renderSingleGraph()
@@ -1022,7 +1022,7 @@ export default function DataModule() {
 
                 {/* Graph Footer: Ask AI About This Chart Button */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 10, borderTop: '1px solid var(--color-surface-border)' }}>
-                  <span style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 600 }}>
+                  <span style={{ fontSize: '0.88rem', color: '#10b981', fontWeight: 600 }}>
                     Active Visualization: {graphType.toUpperCase()} CHART
                   </span>
 
@@ -1034,8 +1034,8 @@ export default function DataModule() {
                       color: '#10b981',
                       border: '1px solid #10b981',
                       borderRadius: 16,
-                      padding: '5px 16px',
-                      fontSize: '0.78rem',
+                      padding: '6px 16px',
+                      fontSize: '0.88rem',
                       fontWeight: 600,
                       display: 'flex',
                       alignItems: 'center',
@@ -1044,7 +1044,7 @@ export default function DataModule() {
                       transition: 'all 0.2s ease',
                     }}
                   >
-                    <Bot size={13} />
+                    <Bot size={14} />
                     <span>Ask AI About This Chart</span>
                   </button>
                 </div>
@@ -1054,10 +1054,10 @@ export default function DataModule() {
               <div
                 className="card"
                 style={{
-                  padding: 16,
+                  padding: '12px 16px',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: 12,
+                  gap: 10,
                   background: 'var(--color-surface-card)',
                   borderRadius: 12,
                   border: '1px solid var(--color-surface-border)',
@@ -1067,7 +1067,7 @@ export default function DataModule() {
                   <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
                     <Table size={16} style={{ color: '#10b981' }} />
                     <span>Data Table</span>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--color-text-secondary)', background: 'var(--color-surface-hover)', padding: '2px 8px', borderRadius: 12 }}>
+                    <span style={{ fontSize: '0.88rem', fontWeight: 500, color: 'var(--color-text-secondary)', background: 'var(--color-surface-hover)', padding: '2px 8px', borderRadius: 12 }}>
                       Showing {tableRows.length} of {(datasetSchema?.row_count || tableRows.length).toLocaleString('ta-IN')} rows
                     </span>
                   </div>
@@ -1085,7 +1085,7 @@ export default function DataModule() {
                     style={{
                       width: '100%',
                       borderCollapse: 'collapse',
-                      fontSize: '0.8rem',
+                      fontSize: '1rem',
                       textAlign: 'left',
                     }}
                   >
@@ -1103,8 +1103,9 @@ export default function DataModule() {
                           <th
                             key={col}
                             style={{
-                              padding: '8px 12px',
+                              padding: '12px 16px',
                               fontWeight: 600,
+                              fontSize: '0.95rem',
                               color: 'var(--color-text-primary)',
                               whiteSpace: 'nowrap',
                               maxWidth: 160,
@@ -1135,7 +1136,8 @@ export default function DataModule() {
                               <td
                                 key={col}
                                 style={{
-                                  padding: '7px 12px',
+                                  padding: '12px 16px',
+                                  fontSize: '1rem',
                                   color: 'var(--color-text-secondary)',
                                   whiteSpace: 'nowrap',
                                   maxWidth: 160,
@@ -1229,7 +1231,7 @@ export default function DataModule() {
                 background: 'rgba(16, 185, 129, 0.08)',
                 border: '1px solid rgba(16, 185, 129, 0.25)',
                 color: '#10b981',
-                fontSize: '0.78rem',
+                fontSize: '0.88rem',
                 fontWeight: 600,
                 cursor: 'pointer',
                 transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -1252,7 +1254,7 @@ export default function DataModule() {
               overflowY: 'auto',
               display: 'flex',
               flexDirection: 'column',
-              gap: 14,
+              gap: 10,
               paddingRight: 4,
               paddingTop: 4,
             }}
@@ -1272,9 +1274,9 @@ export default function DataModule() {
               >
                 <div
                   style={{
-                    padding: msg.sender === 'user' ? '11px 16px' : '14px 16px',
+                    padding: msg.sender === 'user' ? '12px 16px' : '14px 16px',
                     borderRadius: msg.sender === 'user' ? '20px 20px 4px 20px' : '20px 20px 20px 4px',
-                    fontSize: '0.83rem',
+                    fontSize: '1rem',
                     background:
                       msg.sender === 'user'
                         ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
@@ -1297,6 +1299,7 @@ export default function DataModule() {
                       wordBreak: 'break-word',
                       overflowWrap: 'anywhere',
                       lineHeight: 1.6,
+                      fontSize: '1rem',
                     }}
                     className="tamil-text"
                   >
@@ -1308,7 +1311,7 @@ export default function DataModule() {
                     style={{
                       display: 'flex',
                       alignItems: 'center',
-                      justify: 'space-between',
+                      justifyContent: 'space-between',
                       marginTop: 8,
                       gap: 8,
                       borderTop: msg.sender === 'ai' ? '1px solid rgba(16, 185, 129, 0.1)' : 'none',
@@ -1316,7 +1319,7 @@ export default function DataModule() {
                       flexWrap: 'wrap',
                     }}
                   >
-                    <span style={{ fontSize: '0.65rem', opacity: msg.sender === 'user' ? 0.8 : 0.65 }}>
+                    <span style={{ fontSize: '0.88rem', opacity: msg.sender === 'user' ? 0.85 : 0.7 }}>
                       {msg.timestamp}
                     </span>
 
@@ -1327,18 +1330,18 @@ export default function DataModule() {
                           style={{
                             display: 'flex',
                             alignItems: 'center',
-                            gap: 3,
-                            padding: '2px 8px',
+                            gap: 4,
+                            padding: '3px 10px',
                             borderRadius: 9999,
                             background: 'rgba(16, 185, 129, 0.08)',
                             border: '1px solid rgba(16, 185, 129, 0.2)',
                             color: '#10b981',
-                            fontSize: '0.68rem',
+                            fontSize: '0.88rem',
                             cursor: 'pointer',
                           }}
                           title="Copy text"
                         >
-                          {copiedMessageId === msg.id ? <Check size={11} /> : <Copy size={11} />}
+                          {copiedMessageId === msg.id ? <Check size={12} /> : <Copy size={12} />}
                           <span>{copiedMessageId === msg.id ? 'Copied' : 'Copy'}</span>
                         </button>
                         <button
@@ -1346,18 +1349,18 @@ export default function DataModule() {
                           style={{
                             display: 'flex',
                             alignItems: 'center',
-                            gap: 3,
-                            padding: '2px 8px',
+                            gap: 4,
+                            padding: '3px 10px',
                             borderRadius: 9999,
                             background: 'rgba(16, 185, 129, 0.08)',
                             border: '1px solid rgba(16, 185, 129, 0.2)',
                             color: '#10b981',
-                            fontSize: '0.68rem',
+                            fontSize: '0.88rem',
                             cursor: 'pointer',
                           }}
                           title="Share insight"
                         >
-                          <Share2 size={11} />
+                          <Share2 size={12} />
                           <span>Share</span>
                         </button>
                       </div>
@@ -1375,7 +1378,7 @@ export default function DataModule() {
                   borderRadius: '20px 20px 20px 4px',
                   background: 'var(--color-surface-hover)',
                   border: '1px solid rgba(16, 185, 129, 0.2)',
-                  fontSize: '0.8rem',
+                  fontSize: '1rem',
                   color: '#10b981',
                   display: 'flex',
                   alignItems: 'center',
@@ -1395,7 +1398,7 @@ export default function DataModule() {
               flexShrink: 0,
               display: 'flex',
               flexDirection: 'column',
-              gap: 8,
+              gap: 10,
               paddingTop: 10,
               borderTop: '1px solid var(--color-surface-border)',
             }}
@@ -1403,7 +1406,7 @@ export default function DataModule() {
             {/* RECOMMENDED PROMPTS (ONLY SHOWN FIRST TIME BEFORE TEXTING/MESSAGING STARTS) */}
             {!chatMessages.some((msg) => msg.sender === 'user') && !chatInput.trim() && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <div style={{ fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.04em', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>
+                <div style={{ fontSize: '0.95rem', fontWeight: 700, letterSpacing: '0.04em', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>
                   Recommended Prompts
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -1412,7 +1415,7 @@ export default function DataModule() {
                       key={prompt.id}
                       onClick={() => handleSendChatMessage(prompt.query)}
                       style={{
-                        fontSize: '0.78rem',
+                        fontSize: '0.88rem',
                         fontWeight: 600,
                         padding: '8px 14px',
                         borderRadius: 9999,
@@ -1432,7 +1435,7 @@ export default function DataModule() {
                       className="hover:border-emerald-500 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/30"
                       title={prompt.query}
                     >
-                      <span style={{ fontSize: '0.9rem' }}>{prompt.icon}</span>
+                      <span style={{ fontSize: '1rem' }}>{prompt.icon}</span>
                       <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{prompt.label}</span>
                     </button>
                   ))}
@@ -1482,7 +1485,7 @@ export default function DataModule() {
                   background: 'transparent',
                   border: 'none',
                   outline: 'none',
-                  fontSize: '0.84rem',
+                  fontSize: '1rem',
                   color: 'var(--color-text-primary)',
                   fontFamily: "'Noto Sans Tamil', 'Inter', sans-serif",
                   resize: 'none',

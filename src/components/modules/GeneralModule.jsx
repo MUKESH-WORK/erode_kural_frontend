@@ -250,7 +250,7 @@ export default function GeneralModule() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 110px)', gap: 12, overflow: 'hidden' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 110px)', gap: 10, overflow: 'hidden' }}>
       {/* Main Center Container */}
       <div
         ref={chatContainerRef}
@@ -261,8 +261,8 @@ export default function GeneralModule() {
           overflowY: 'auto',
           display: 'flex',
           flexDirection: 'column',
-          gap: 14,
-          padding: 20,
+          gap: 10,
+          padding: '12px 16px',
           position: 'relative',
           background: 'var(--color-surface-card)',
           border: '1px solid var(--color-surface-border)',
@@ -294,7 +294,7 @@ export default function GeneralModule() {
           <div
             style={{
               display: 'flex',
-              justify: 'flex-end',
+              justifyContent: 'flex-end',
               gap: 8,
               paddingBottom: 6,
               borderBottom: '1px solid var(--color-surface-border)',
@@ -307,8 +307,8 @@ export default function GeneralModule() {
               className="btn btn-ghost"
               title={t('general.export')}
               style={{
-                fontSize: '0.74rem',
-                padding: '4px 10px',
+                fontSize: '0.88rem',
+                padding: '5px 12px',
                 borderRadius: 6,
                 gap: 5,
                 color: 'var(--color-text-secondary)',
@@ -316,7 +316,7 @@ export default function GeneralModule() {
                 background: 'var(--color-surface-bg)',
               }}
             >
-              <Download size={13} />
+              <Download size={14} />
               <span>{t('general.export')}</span>
             </button>
             <button
@@ -324,8 +324,8 @@ export default function GeneralModule() {
               className="btn btn-ghost"
               title={t('general.clear')}
               style={{
-                fontSize: '0.74rem',
-                padding: '4px 10px',
+                fontSize: '0.88rem',
+                padding: '5px 12px',
                 borderRadius: 6,
                 gap: 5,
                 color: '#ef4444',
@@ -333,7 +333,7 @@ export default function GeneralModule() {
                 background: 'rgba(239, 68, 68, 0.05)',
               }}
             >
-              <Trash2 size={13} />
+              <Trash2 size={14} />
               <span>{t('general.clear')}</span>
             </button>
           </div>
@@ -348,7 +348,7 @@ export default function GeneralModule() {
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              gap: 16,
+              gap: 12,
               padding: '12px 10px',
               position: 'relative',
               zIndex: 1,
@@ -373,14 +373,14 @@ export default function GeneralModule() {
               </div>
               <h2
                 className="tamil-text"
-                style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-text-primary)', marginTop: 4 }}
+                style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--color-text-primary)', marginTop: 4 }}
               >
                 {t('general.welcome', { officerId })}
               </h2>
               <p
                 className="tamil-text"
                 style={{
-                  fontSize: '0.85rem',
+                  fontSize: '0.95rem',
                   color: 'var(--color-text-secondary)',
                   maxWidth: 500,
                   lineHeight: 1.5,
@@ -391,7 +391,7 @@ export default function GeneralModule() {
             </div>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, overflowY: 'auto', flex: 1, position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, overflowY: 'auto', flex: 1, position: 'relative', zIndex: 1 }}>
             {messages.map((m) => {
               const isUser = m.sender === 'user';
               return (
@@ -430,7 +430,7 @@ export default function GeneralModule() {
                     <div
                       className="tamil-text"
                       style={{
-                        padding: '14px 18px',
+                        padding: '12px 16px',
                         borderRadius: isUser ? '16px 4px 16px 16px' : '4px 16px 16px 16px',
                         background: isUser
                           ? 'linear-gradient(135deg, var(--color-tn-primary) 0%, var(--color-tn-primary-light) 100%)'
@@ -447,7 +447,7 @@ export default function GeneralModule() {
                           : m.isError
                             ? '1px solid #fecaca'
                             : '1px solid var(--color-surface-border)',
-                        fontSize: '0.9rem',
+                        fontSize: '1rem',
                         lineHeight: 1.65,
                         whiteSpace: 'pre-wrap',
                         wordBreak: 'break-word',
@@ -467,7 +467,7 @@ export default function GeneralModule() {
                         alignItems: 'center',
                         gap: 8,
                         marginTop: 4,
-                        fontSize: '0.72rem',
+                        fontSize: '0.88rem',
                         color: 'var(--color-text-muted)',
                         padding: '0 4px',
                       }}
@@ -486,8 +486,8 @@ export default function GeneralModule() {
                               color: copiedId === m.id ? '#10b981' : 'var(--color-text-muted)',
                               display: 'flex',
                               alignItems: 'center',
-                              gap: 3,
-                              fontSize: '0.72rem',
+                              gap: 4,
+                              fontSize: '0.88rem',
                             }}
                             title={t('general.copy')}
                           >
@@ -505,8 +505,8 @@ export default function GeneralModule() {
                               color: speakingId === m.id ? '#3b82f6' : 'var(--color-text-muted)',
                               display: 'flex',
                               alignItems: 'center',
-                              gap: 3,
-                              fontSize: '0.72rem',
+                              gap: 4,
+                              fontSize: '0.88rem',
                             }}
                             title={t('general.read')}
                           >
@@ -542,7 +542,7 @@ export default function GeneralModule() {
             </div>
             <div
               style={{
-                padding: '12px 18px',
+                padding: '12px 16px',
                 borderRadius: '4px 16px 16px 16px',
                 background: 'var(--color-surface-bg)',
                 border: '1px solid var(--color-surface-border)',
@@ -552,7 +552,7 @@ export default function GeneralModule() {
               }}
             >
               <RefreshCw className="animate-spin text-blue-500" size={16} />
-              <span className="tamil-text" style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
+              <span className="tamil-text" style={{ fontSize: '0.95rem', color: 'var(--color-text-secondary)' }}>
                 {t('general.processing')}
               </span>
             </div>
@@ -567,8 +567,8 @@ export default function GeneralModule() {
         style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: 12,
-          padding: 16,
+          gap: 10,
+          padding: '12px 16px',
           background: 'var(--color-surface-card)',
           border: '1px solid var(--color-surface-border)',
           borderRadius: 16,
@@ -616,7 +616,7 @@ export default function GeneralModule() {
                       background: 'rgba(200, 169, 81, 0.08)',
                       border: '1px solid rgba(200, 169, 81, 0.25)',
                       color: 'var(--color-text-primary)',
-                      fontSize: '0.8rem',
+                      fontSize: '0.88rem',
                       fontWeight: 500,
                       textAlign: 'left',
                       cursor: 'pointer',
@@ -639,12 +639,12 @@ export default function GeneralModule() {
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, overflow: 'hidden' }}>
-                      <Sparkles size={13} style={{ color: 'var(--color-tn-accent)', flexShrink: 0 }} />
+                      <Sparkles size={14} style={{ color: 'var(--color-tn-accent)', flexShrink: 0 }} />
                       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
                         {t(key)}
                       </span>
                     </div>
-                    <ChevronRight size={13} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
+                    <ChevronRight size={14} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
                   </button>
                 ))}
               </div>
@@ -660,7 +660,7 @@ export default function GeneralModule() {
                 borderRadius: 10,
                 background: 'var(--color-surface-bg)',
                 border: '1px solid var(--color-surface-border)',
-                fontSize: '0.82rem',
+                fontSize: '0.88rem',
                 color: 'var(--color-text-primary)',
                 maxWidth: '100%',
                 boxSizing: 'border-box',
@@ -679,7 +679,7 @@ export default function GeneralModule() {
               >
                 {file.name}
               </span>
-              <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', flexShrink: 0 }}>
+              <span style={{ fontSize: '0.88rem', color: 'var(--color-text-muted)', flexShrink: 0 }}>
                 · {(file.size / 1024).toFixed(1)} KB
               </span>
               <button
@@ -733,7 +733,7 @@ export default function GeneralModule() {
             background: 'transparent',
             border: 'none',
             outline: 'none',
-            fontSize: '0.92rem',
+            fontSize: '1rem',
             color: 'var(--color-text-primary)',
             resize: 'none',
             fontFamily: "'Noto Sans Tamil', 'Inter', sans-serif",
@@ -764,9 +764,9 @@ export default function GeneralModule() {
               onClick={() => fileInputRef.current?.click()}
               className="btn btn-ghost"
               style={{
-                padding: '6px 12px',
+                padding: '6px 14px',
                 borderRadius: 10,
-                fontSize: '0.82rem',
+                fontSize: '0.88rem',
                 color: 'var(--color-text-secondary)',
                 border: '1px solid var(--color-surface-border)',
                 display: 'flex',
@@ -784,9 +784,9 @@ export default function GeneralModule() {
               onClick={toggleListening}
               className="btn btn-ghost"
               style={{
-                padding: '6px 12px',
+                padding: '6px 14px',
                 borderRadius: 10,
-                fontSize: '0.82rem',
+                fontSize: '0.88rem',
                 color: isListening ? '#ef4444' : 'var(--color-text-secondary)',
                 background: isListening ? 'rgba(239, 68, 68, 0.1)' : 'transparent',
                 display: 'flex',
@@ -816,6 +816,7 @@ export default function GeneralModule() {
               display: 'flex',
               alignItems: 'center',
               gap: 8,
+              fontSize: '1rem',
               fontWeight: 600,
               boxShadow: !input.trim() || loading ? 'none' : '0 4px 12px rgba(13, 136, 8, 0.35)',
               transition: 'all 0.2s ease',
@@ -825,7 +826,7 @@ export default function GeneralModule() {
               <RefreshCw size={16} className="animate-spin text-white" />
             ) : (
               <>
-                <span style={{ fontSize: '0.84rem' }}>{t('general.send')}</span>
+                <span style={{ fontSize: '1rem' }}>{t('general.send')}</span>
                 <Send size={15} />
               </>
             )}

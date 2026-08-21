@@ -154,23 +154,17 @@ export default function AuditModule() {
   const hasActiveFilters = selectedCategory !== 'all' || selectedYear !== 'all' || selectedMonth !== 'all' || selectedDay !== 'all' || selectedDate !== '';
 
   return (
-    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       {/* Header Bar */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h1 className="module-title tamil-text">{t('audit.title')}</h1>
-          <p style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }} className="tamil-text">
+          <h1 className="module-title tamil-text" style={{ fontSize: '1.05rem', fontWeight: 700 }}>{t('audit.title')}</h1>
+          <p style={{ fontSize: '0.95rem', color: 'var(--color-text-secondary)', marginTop: 4 }} className="tamil-text">
             {t('audit.desc')}
           </p>
         </div>
-        <button
-          className="btn btn-ghost btn-sm"
-          onClick={loadAudit}
-          disabled={loading}
-          title="Refresh Audit Log"
-          style={{ color: 'var(--color-text-primary)' }}
-        >
-          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} style={{ color: 'var(--color-text-primary)' }} />
+        <button className="btn btn-ghost btn-sm" onClick={loadAudit} disabled={loading} title="Refresh Audit Log" style={{ fontSize: '0.88rem' }}>
+          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
         </button>
       </div>
 
@@ -178,19 +172,19 @@ export default function AuditModule() {
       <div
         className="card"
         style={{
-          padding: 16,
+          padding: '12px 16px',
           background: 'var(--color-surface-card)',
           border: '1px solid var(--color-surface-border)',
           borderRadius: 14,
           display: 'flex',
           flexDirection: 'column',
-          gap: 14,
+          gap: 10,
           boxShadow: '0 2px 10px rgba(0,0,0,0.03)',
         }}
       >
         {/* Category Pills */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.78rem', fontWeight: 600, color: 'var(--color-text-secondary)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.95rem', fontWeight: 600, color: 'var(--color-text-secondary)' }}>
             <Layers size={14} style={{ color: 'var(--color-tn-primary)' }} />
             <span className="tamil-text">{t('audit.filter_category')}</span>
           </div>
@@ -216,7 +210,7 @@ export default function AuditModule() {
                     gap: 6,
                     padding: '6px 14px',
                     borderRadius: 20,
-                    fontSize: '0.78rem',
+                    fontSize: '0.88rem',
                     fontWeight: active ? 600 : 500,
                     border: active ? '1px solid var(--color-tn-primary)' : '1px solid var(--color-surface-border)',
                     background: active ? 'var(--color-tn-primary)' : 'var(--color-surface-bg)',
@@ -225,7 +219,7 @@ export default function AuditModule() {
                     transition: 'all 0.2s ease',
                   }}
                 >
-                  <IconComp size={13} />
+                  <IconComp size={14} />
                   <span>{cat.label}</span>
                 </button>
               );
@@ -234,8 +228,8 @@ export default function AuditModule() {
         </div>
 
         {/* Date / Month / Year Controls */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, paddingTop: 10, borderTop: '1px solid var(--color-surface-border)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.78rem', fontWeight: 600, color: 'var(--color-text-secondary)', marginRight: 4 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, paddingTop: 10, borderTop: '1px solid var(--color-surface-border)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.95rem', fontWeight: 600, color: 'var(--color-text-secondary)', marginRight: 4 }}>
             <Calendar size={14} style={{ color: 'var(--color-tn-primary)' }} />
             <span className="tamil-text">{t('audit.filter_date')}:</span>
           </div>
@@ -247,12 +241,12 @@ export default function AuditModule() {
               value={selectedDate}
               onChange={handleDateInputChange}
               style={{
-                padding: '5px 10px',
+                padding: '6px 12px',
                 borderRadius: 8,
                 border: '1px solid var(--color-surface-border)',
                 background: 'var(--color-surface-bg)',
                 color: 'var(--color-text-primary)',
-                fontSize: '0.78rem',
+                fontSize: '1rem',
                 outline: 'none',
               }}
             />
@@ -263,19 +257,19 @@ export default function AuditModule() {
             value={selectedYear}
             onChange={(e) => { setSelectedYear(e.target.value); setSelectedDate(''); }}
             style={{
-              padding: '5px 10px',
+              padding: '6px 12px',
               borderRadius: 8,
               border: '1px solid var(--color-surface-border)',
               background: 'var(--color-surface-bg)',
-              color: 'var(--color-text-primary)',
-              fontSize: '0.78rem',
+              color: '#000000',
+              fontSize: '1rem',
               outline: 'none',
               cursor: 'pointer',
             }}
           >
-            <option value="all">{t('audit.all_years')}</option>
+            <option value="all" style={{ color: '#000000', backgroundColor: '#ffffff' }}>{t('audit.all_years')}</option>
             {yearsList.map((y) => (
-              <option key={y} value={y}>{y}</option>
+              <option key={y} value={y} style={{ color: '#000000', backgroundColor: '#ffffff' }}>{y}</option>
             ))}
           </select>
 
@@ -284,19 +278,19 @@ export default function AuditModule() {
             value={selectedMonth}
             onChange={(e) => { setSelectedMonth(e.target.value); setSelectedDate(''); }}
             style={{
-              padding: '5px 10px',
+              padding: '6px 12px',
               borderRadius: 8,
               border: '1px solid var(--color-surface-border)',
               background: 'var(--color-surface-bg)',
-              color: 'var(--color-text-primary)',
-              fontSize: '0.78rem',
+              color: '#000000',
+              fontSize: '1rem',
               outline: 'none',
               cursor: 'pointer',
             }}
           >
-            <option value="all">{t('audit.all_months')}</option>
+            <option value="all" style={{ color: '#000000', backgroundColor: '#ffffff' }}>{t('audit.all_months')}</option>
             {monthsList.map((m) => (
-              <option key={m.value} value={m.value}>{m.label}</option>
+              <option key={m.value} value={m.value} style={{ color: '#000000', backgroundColor: '#ffffff' }}>{m.label}</option>
             ))}
           </select>
 
@@ -305,19 +299,19 @@ export default function AuditModule() {
             value={selectedDay}
             onChange={(e) => { setSelectedDay(e.target.value); setSelectedDate(''); }}
             style={{
-              padding: '5px 10px',
+              padding: '6px 12px',
               borderRadius: 8,
               border: '1px solid var(--color-surface-border)',
               background: 'var(--color-surface-bg)',
-              color: 'var(--color-text-primary)',
-              fontSize: '0.78rem',
+              color: '#000000',
+              fontSize: '1rem',
               outline: 'none',
               cursor: 'pointer',
             }}
           >
-            <option value="all">{t('audit.all_days')}</option>
+            <option value="all" style={{ color: '#000000', backgroundColor: '#ffffff' }}>{t('audit.all_days')}</option>
             {daysList.map((d) => (
-              <option key={d} value={d}>{t('audit.day')} {d}</option>
+              <option key={d} value={d} style={{ color: '#000000', backgroundColor: '#ffffff' }}>{t('audit.day')} {d}</option>
             ))}
           </select>
 
@@ -331,9 +325,9 @@ export default function AuditModule() {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 5,
-                padding: '5px 12px',
+                padding: '6px 12px',
                 borderRadius: 8,
-                fontSize: '0.75rem',
+                fontSize: '0.88rem',
                 color: '#ef4444',
                 background: 'rgba(239, 68, 68, 0.08)',
                 border: '1px solid rgba(239, 68, 68, 0.2)',
@@ -341,7 +335,7 @@ export default function AuditModule() {
                 marginLeft: 'auto',
               }}
             >
-              <RotateCcw size={13} />
+              <RotateCcw size={14} />
               <span>{t('audit.reset_filters')}</span>
             </button>
           )}
@@ -350,7 +344,7 @@ export default function AuditModule() {
 
       {/* Results Count & Table View */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 4px' }}>
-        <span style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', fontWeight: 500 }} className="tamil-text">
+        <span style={{ fontSize: '0.88rem', color: 'var(--color-text-muted)', fontWeight: 500 }} className="tamil-text">
           {t('audit.showing_results', { count: filteredEntries.length })}
         </span>
       </div>
@@ -362,19 +356,19 @@ export default function AuditModule() {
       ) : filteredEntries.length === 0 ? (
         <div className="empty-state">
           <ClipboardList size={56} style={{ color: 'var(--color-text-muted)' }} className="empty-icon" />
-          <div className="empty-title tamil-text">{t('audit.empty')}</div>
+          <div className="empty-title tamil-text" style={{ fontSize: '1.05rem' }}>{t('audit.empty')}</div>
         </div>
       ) : (
-        <div className="card" style={{ padding: 0, maxHeight: 'calc(100vh - 280px)', overflowY: 'auto', borderRadius: 12, border: '1px solid var(--color-surface-border)' }}>
-          <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+          <table className="data-table">
             <thead>
               <tr>
-                <th className="tamil-text" style={{ position: 'sticky', top: 0, background: 'var(--color-surface-hover)', zIndex: 5, boxShadow: '0 1px 0 var(--color-surface-border)', whiteSpace: 'nowrap' }}>{t('audit.date_time')}</th>
-                <th className="tamil-text" style={{ position: 'sticky', top: 0, background: 'var(--color-surface-hover)', zIndex: 5, boxShadow: '0 1px 0 var(--color-surface-border)', whiteSpace: 'nowrap' }}>{t('audit.category')}</th>
-                <th className="tamil-text" style={{ position: 'sticky', top: 0, background: 'var(--color-surface-hover)', zIndex: 5, boxShadow: '0 1px 0 var(--color-surface-border)', whiteSpace: 'nowrap' }}>{t('audit.action')}</th>
-                <th className="tamil-text" style={{ position: 'sticky', top: 0, background: 'var(--color-surface-hover)', zIndex: 5, boxShadow: '0 1px 0 var(--color-surface-border)', whiteSpace: 'nowrap' }}>{t('audit.officer')}</th>
-                <th className="tamil-text" style={{ position: 'sticky', top: 0, background: 'var(--color-surface-hover)', zIndex: 5, boxShadow: '0 1px 0 var(--color-surface-border)', whiteSpace: 'nowrap' }}>{t('audit.source_id')}</th>
-                <th className="tamil-text" style={{ position: 'sticky', top: 0, background: 'var(--color-surface-hover)', zIndex: 5, boxShadow: '0 1px 0 var(--color-surface-border)' }}>{t('audit.details')}</th>
+                <th className="tamil-text" style={{ fontSize: '0.95rem' }}>{t('audit.date_time')}</th>
+                <th className="tamil-text" style={{ fontSize: '0.95rem' }}>{t('audit.category')}</th>
+                <th className="tamil-text" style={{ fontSize: '0.95rem' }}>{t('audit.action')}</th>
+                <th className="tamil-text" style={{ fontSize: '0.95rem' }}>{t('audit.officer')}</th>
+                <th className="tamil-text" style={{ fontSize: '0.95rem' }}>{t('audit.source_id')}</th>
+                <th className="tamil-text" style={{ fontSize: '0.95rem' }}>{t('audit.details')}</th>
               </tr>
             </thead>
             <tbody>
@@ -383,7 +377,7 @@ export default function AuditModule() {
                 const CatIcon = catMeta.icon;
                 return (
                   <tr key={ent.id}>
-                    <td style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>
+                    <td style={{ fontSize: '1rem', color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>
                       {formatDate(ent.timestamp, i18n.language)}
                     </td>
                     <td>
@@ -395,7 +389,7 @@ export default function AuditModule() {
                           gap: 5,
                           padding: '3px 10px',
                           borderRadius: 12,
-                          fontSize: '0.74rem',
+                          fontSize: '0.88rem',
                           fontWeight: 600,
                           background: catMeta.bg,
                           color: catMeta.color,
@@ -403,7 +397,7 @@ export default function AuditModule() {
                           whiteSpace: 'nowrap',
                         }}
                       >
-                        <CatIcon size={12} />
+                        <CatIcon size={13} />
                         <span>{catMeta.label}</span>
                       </span>
                     </td>
@@ -412,7 +406,7 @@ export default function AuditModule() {
                         style={{
                           padding: '2px 8px',
                           borderRadius: 4,
-                          fontSize: '0.74rem',
+                          fontSize: '0.88rem',
                           fontWeight: 700,
                           background: ent.action.includes('APPROVE') ? '#d1fae5' : 'var(--color-surface-bg)',
                           color: ent.action.includes('APPROVE') ? '#065f46' : 'var(--color-text-primary)',
@@ -422,11 +416,11 @@ export default function AuditModule() {
                         {ent.action}
                       </span>
                     </td>
-                    <td style={{ fontWeight: 600, fontSize: '0.82rem' }}>{ent.officer_id || 'SYSTEM'}</td>
-                    <td style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
+                    <td style={{ fontWeight: 600, fontSize: '1rem' }}>{ent.officer_id || 'SYSTEM'}</td>
+                    <td style={{ fontSize: '1rem', color: 'var(--color-text-muted)' }}>
                       {ent.source_id ? `${ent.source_id.slice(0, 12)}${ent.source_id.length > 12 ? '…' : ''}` : '—'}
                     </td>
-                    <td className="tamil-text" style={{ fontSize: '0.83rem', color: 'var(--color-text-secondary)', whiteSpace: 'normal', wordBreak: 'break-word', lineHeight: 1.4 }}>
+                    <td className="tamil-text" style={{ fontSize: '1rem', color: 'var(--color-text-secondary)' }}>
                       {ent.details}
                     </td>
                   </tr>

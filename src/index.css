@@ -41,6 +41,21 @@
   --spacing-sidebar-collapsed: 72px;
   --spacing-topbar: 64px;
   --spacing-inspector: 400px;
+
+  /* --- Elder-Friendly Government Web Application Sizing Standard --- */
+  --font-size-page-title: 1.05rem;
+  --font-size-section-title: 0.95rem;
+  --font-size-label: 0.95rem;
+  --font-size-body: 1rem;
+  --font-size-input: 1rem;
+  --font-size-preview: 1rem;
+  --font-size-primary-btn: 1rem;
+  --font-size-secondary-btn: 0.88rem;
+
+  --spacing-section-gap: 10px;
+  --spacing-field-gap: 10px;
+  --spacing-card-padding: 12px 16px;
+  --spacing-label-input-gap: 4px;
 }
 
 /* ================================================================
@@ -60,7 +75,7 @@
 }
 
 /* ================================================================
-   Base Styles
+   Base Styles & Elder-Friendly Government Web Application Sizing Standard
    ================================================================ */
 @font-face {
   font-family: 'Noto Sans Tamil';
@@ -84,13 +99,14 @@ body,
 }
 
 html {
-  font-size: 15px;
+  font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 body {
   font-family: 'Inter', 'Noto Sans Tamil', 'Nirmala UI', system-ui, -apple-system, sans-serif;
+  font-size: var(--font-size-body);
   background-color: var(--color-surface-bg);
   color: var(--color-text-primary);
   min-height: 100vh;
@@ -222,11 +238,14 @@ body,
 /* ================================================================
    Card Component
    ================================================================ */
+/* ================================================================
+   Card Component
+   ================================================================ */
 .card {
   background: var(--color-surface-card);
   border: 1px solid var(--color-surface-border);
   border-radius: 12px;
-  padding: 19px;
+  padding: var(--spacing-card-padding);
   transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
@@ -247,7 +266,7 @@ body,
   gap: 6px;
   padding: 4px 12px;
   border-radius: 9999px;
-  font-size: 0.75rem;
+  font-size: var(--font-size-secondary-btn);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.025em;
@@ -332,31 +351,64 @@ body,
 }
 
 /* ================================================================
-   Tamil Typography
+   Tamil & Common Typography Standard
    ================================================================ */
 .tamil-text {
   font-family: 'Noto Sans Tamil', sans-serif;
   line-height: 1.7;
 }
 
-.module-title {
-  font-size: 1.25rem;
+.page-title,
+.module-title,
+h1 {
+  font-size: var(--font-size-page-title) !important;
   font-weight: 700;
   color: var(--color-text-primary);
 }
 
+.section-title,
+.form-label,
+label,
+h2,
+h3,
+h4 {
+  font-size: var(--font-size-section-title) !important;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+label,
+.form-label {
+  display: inline-block;
+  margin-bottom: var(--spacing-label-input-gap);
+}
+
+.form-group,
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-label-input-gap);
+  margin-bottom: var(--spacing-field-gap);
+}
+
+input,
+textarea,
+select {
+  font-size: var(--font-size-input) !important;
+}
+
 /* ================================================================
-   Button System
+   Button System Standard
    ================================================================ */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 8px 20px;
+  padding: 8px 18px;
   border-radius: 8px;
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: var(--font-size-primary-btn);
   cursor: pointer;
   border: none;
   transition: all 0.2s ease;
@@ -367,18 +419,22 @@ body,
   transform: scale(0.97);
 }
 
-.btn-primary {
+.btn-primary,
+.btn-main {
   background: var(--color-tn-primary);
   color: white;
+  font-size: var(--font-size-primary-btn) !important;
 }
 
-.btn-primary:hover {
+.btn-primary:hover,
+.btn-main:hover {
   background: var(--color-tn-primary-light);
 }
 
 .btn-accent {
   background: var(--color-tn-accent);
   color: var(--color-tn-primary-dark);
+  font-size: var(--font-size-primary-btn) !important;
 }
 
 .btn-accent:hover {
@@ -388,6 +444,7 @@ body,
 .btn-success {
   background: var(--color-tn-success);
   color: white;
+  font-size: var(--font-size-primary-btn) !important;
 }
 
 .btn-success:hover {
@@ -397,19 +454,24 @@ body,
 .btn-danger {
   background: var(--color-tn-danger);
   color: white;
+  font-size: var(--font-size-primary-btn) !important;
 }
 
 .btn-danger:hover {
   background: #dc2626;
 }
 
+.btn-secondary,
 .btn-ghost {
   background: transparent;
-  color: #f1f5f9;
+  color: var(--color-text-primary);
   border: 1px solid var(--color-surface-border);
+  font-size: var(--font-size-secondary-btn) !important;
+  padding: 6px 14px;
 }
 
-.btn-ghost:hover {
+.btn-ghost:hover,
+.btn-secondary:hover {
   background: var(--color-surface-hover);
   color: var(--color-text-primary);
 }
@@ -423,6 +485,7 @@ select.btn-ghost option,
 .filter-select option {
   color: #000000 !important;
   background-color: #ffffff;
+  font-size: var(--font-size-input) !important;
 }
 
 select:hover,
@@ -445,12 +508,12 @@ select.btn-ghost option:checked {
 
 .btn-sm {
   padding: 4px 12px;
-  font-size: 0.75rem;
+  font-size: var(--font-size-secondary-btn) !important;
 }
 
 .btn-lg {
-  padding: 12px 28px;
-  font-size: 1rem;
+  padding: 10px 24px;
+  font-size: var(--font-size-primary-btn) !important;
 }
 
 /* ================================================================
@@ -460,7 +523,7 @@ select.btn-ghost option:checked {
   background: var(--color-surface-card);
   border: 1px solid var(--color-surface-border);
   border-radius: 12px;
-  padding: 20px;
+  padding: var(--spacing-card-padding);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -478,26 +541,26 @@ select.btn-ghost option:checked {
 }
 
 .stat-card .stat-value {
-  font-size: 2rem;
+  font-size: 1.8rem;
   font-weight: 800;
   color: var(--color-text-primary);
   line-height: 1;
 }
 
 .stat-card .stat-label {
-  font-size: 0.8rem;
+  font-size: var(--font-size-section-title);
   color: var(--color-text-secondary);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 /* ================================================================
-   Data Table
+   Data Table Standard
    ================================================================ */
 .data-table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  font-size: 0.85rem;
+  font-size: var(--font-size-body);
 }
 
 .data-table th {
@@ -505,8 +568,8 @@ select.btn-ghost option:checked {
   color: var(--color-text-secondary);
   font-weight: 600;
   text-transform: uppercase;
-  font-size: 0.7rem;
-  letter-spacing: 0.05em;
+  font-size: var(--font-size-section-title);
+  letter-spacing: 0.04em;
   padding: 12px 16px;
   text-align: left;
   border-bottom: 2px solid var(--color-surface-border);
@@ -523,6 +586,7 @@ select.btn-ghost option:checked {
   padding: 12px 16px;
   border-bottom: 1px solid var(--color-surface-border);
   color: var(--color-text-primary);
+  font-size: var(--font-size-body);
   vertical-align: middle;
 }
 

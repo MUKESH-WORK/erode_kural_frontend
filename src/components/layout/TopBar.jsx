@@ -25,10 +25,10 @@ export default function TopBar() {
         className="btn btn-ghost btn-sm"
         onClick={toggleLang}
         title={t('topbar.theme_toggle')}
-        style={{ gap: 4 }}
+        style={{ gap: 4, fontSize: '0.88rem' }}
       >
         <Globe size={16} />
-        <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>
+        <span style={{ fontSize: '0.88rem', fontWeight: 600 }}>
           {i18n.language === 'ta' ? 'EN' : 'தமிழ்'}
         </span>
       </button>
@@ -53,7 +53,7 @@ export default function TopBar() {
           display: 'flex',
           alignItems: 'center',
           gap: 8,
-          padding: '4px 12px',
+          padding: '6px 14px',
           background: 'var(--color-surface-hover)',
           borderRadius: 8,
           cursor: 'pointer',
@@ -72,14 +72,14 @@ export default function TopBar() {
               background: 'transparent',
               border: 'none',
               outline: 'none',
-              width: 80,
-              fontSize: '0.8rem',
+              width: 90,
+              fontSize: '1rem',
               color: 'var(--color-text-primary)',
               fontWeight: 600,
             }}
           />
         ) : (
-          <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--color-text-primary)' }}>
+          <span style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--color-text-primary)' }}>
             {officerId}
           </span>
         )}
